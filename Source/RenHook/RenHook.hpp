@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <codecvt>
 #include <iomanip>
 #include <iostream>
