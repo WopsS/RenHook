@@ -34,4 +34,8 @@
 #define LOG_ERROR std::wcout << L"[ERROR] "
 #endif
 
+#ifndef LOG_LINE_SEPARATOR
+#define LOG_LINE_SEPARATOR std::endl
+#endif
+
 #include <RenHook/Hooks/Hooks.hpp>
