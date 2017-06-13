@@ -1,0 +1,23 @@
+version: '{branch}.{build}'
+pull_requests:
+  do_not_increment_build_number: true
+skip_tags: true
+image: Visual Studio 2017
+configuration:
+  - Debug
+  - Release
+platform: x64
+clone_depth: 1
+environment:
+  premake_dir: $(APPVEYOR_BUILD_FOLDER)\Premake
+install:
+  - ps: appveyor DownloadFile https://github.com/premake/premake-core/releases/download/v5.0.0-alpha11/premake-5.0.0-alpha11-windows.zip
+  - ps: 7z e premake-*-windows.zip -o"$env:premake_dir"
+before_build:
+  - ps: cd "$env:premake_dir"
+  - ps: ./GenerateVisualStudioProject.bat
+build:
+  verbosity: minimal
+artifacts:
+- path: Build\$(configuration)
+  name: RenHook
