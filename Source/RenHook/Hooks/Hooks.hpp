@@ -60,7 +60,7 @@ namespace RenHook
                     // Is it loaded now?
                     if (Handle == nullptr)
                     {
-                        LOG_ERROR << L"Module " << std::quoted(Module) << L" cannot be found";
+                        LOG_ERROR << L"Module " << std::quoted(Module) << L" cannot be found" << LOG_LINE_SEPARATOR;
                         return nullptr;
                     }
                 }
@@ -70,12 +70,12 @@ namespace RenHook
                 // Do we have an invalid address?
                 if (Address == nullptr)
                 {
-                    LOG_ERROR << L"Cannot find the address for " << std::quoted(Function) << L" in module " << std::quoted(Module);
+                    LOG_ERROR << L"Cannot find the address for " << std::quoted(Function) << L" in module " << std::quoted(Module) << LOG_LINE_SEPARATOR;
                     return nullptr;
                 }
 
 #ifdef _DEBUG
-                LOG_DEBUG << std::quoted(Function) << L" found at " << std::hex << std::showbase << reinterpret_cast<uintptr_t>(Address) << L" in module " << std::quoted(Module);
+                LOG_DEBUG << std::quoted(Function) << L" found at " << std::hex << std::showbase << reinterpret_cast<uintptr_t>(Address) << L" in module " << std::quoted(Module) << LOG_LINE_SEPARATOR;
 #endif
 
                 return Private::Create(reinterpret_cast<uintptr_t>(Address), reinterpret_cast<uintptr_t>(Detour), Size, Key);
@@ -95,7 +95,7 @@ namespace RenHook
                 // Make sure the pattern is properly aligned.
                 if (Key.length() % 2 > 0)
                 {
-                    LOG_ERROR << L"Pattern " << std::quoted(Pattern) << L" is not properly aligned";
+                    LOG_ERROR << L"Pattern " << std::quoted(Pattern) << L" is not properly aligned" << LOG_LINE_SEPARATOR;
                     return nullptr;
                 }
 
@@ -109,7 +109,7 @@ namespace RenHook
 
                 if (Address == 0)
                 {
-                    LOG_ERROR << L"Pattern " << std::quoted(Pattern) << L" not found";
+                    LOG_ERROR << L"Pattern " << std::quoted(Pattern) << L" not found" << LOG_LINE_SEPARATOR;
                     return nullptr;
                 }
 
