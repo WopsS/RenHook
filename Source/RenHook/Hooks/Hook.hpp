@@ -29,6 +29,18 @@ namespace RenHook
             return RenHook::Managers::Hooks::Create(Pattern, Detour, Size, Key);
         }
 
+        static std::shared_ptr<Hook> Get(const uintptr_t Address);
+
+        static std::shared_ptr<Hook> Get(const std::wstring& Key);
+
+        static std::shared_ptr<Hook> Get(const std::wstring& Module, const std::wstring& Function);
+
+        static void Remove(const uintptr_t Address);
+
+        static void Remove(const std::wstring& Key);
+
+        static void Remove(const std::wstring& Module, const std::wstring& Function);
+
         template<typename Result, typename CallType, typename... Args>
         Result Call(Args&& ...args)
         {

@@ -115,6 +115,18 @@ namespace RenHook
 
                 return Private::Create(Address, reinterpret_cast<uintptr_t>(Detour), Size, Key);
             }
+
+            std::shared_ptr<Hook> Get(const uintptr_t Address);
+
+            std::shared_ptr<Hook> Get(const std::wstring& Key);
+
+            std::shared_ptr<Hook> Get(const std::wstring& Module, const std::wstring& Function);
+
+            void Remove(const uintptr_t Address);
+
+            void Remove(const std::wstring& Key);
+
+            void Remove(const std::wstring& Module, const std::wstring& Function);          
         }
     }
 }

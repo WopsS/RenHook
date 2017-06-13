@@ -47,6 +47,36 @@ RenHook::Hook::~Hook()
     Threads.Resume();
 }
 
+std::shared_ptr<RenHook::Hook> RenHook::Hook::Get(const uintptr_t Address)
+{
+    return RenHook::Managers::Hooks::Get(Address);
+}
+
+std::shared_ptr<RenHook::Hook> RenHook::Hook::Get(const std::wstring& Key)
+{
+    return RenHook::Managers::Hooks::Get(Key);
+}
+
+std::shared_ptr<RenHook::Hook> RenHook::Hook::Get(const std::wstring& Module, const std::wstring& Function)
+{
+    return RenHook::Managers::Hooks::Get(Module, Function);
+}
+
+void RenHook::Hook::Remove(const uintptr_t Address)
+{
+    return RenHook::Managers::Hooks::Remove(Address);
+}
+
+void RenHook::Hook::Remove(const std::wstring& Key)
+{
+    return RenHook::Managers::Hooks::Remove(Key);
+}
+
+void RenHook::Hook::Remove(const std::wstring& Module, const std::wstring& Function)
+{
+    return RenHook::Managers::Hooks::Remove(Module, Function);
+}
+
 const size_t RenHook::Hook::WriteJump(const uintptr_t Address, const uintptr_t Detour, const size_t Size) const
 {
     std::vector<uint8_t> Bytes;
