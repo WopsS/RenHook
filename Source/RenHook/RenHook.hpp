@@ -11,6 +11,7 @@
 #include <vector>
 
 #include <Windows.h>
+#include <TlHelp32.h>
 
 #ifdef CUSTOM_LOGGER
 #include CUSTOM_LOGGER
