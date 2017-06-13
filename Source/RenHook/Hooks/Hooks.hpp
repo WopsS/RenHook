@@ -17,7 +17,7 @@ namespace RenHook
             }
 
             template<typename T>
-            static std::shared_ptr<Hook> Create(const uintptr_t Address, const T Detour, const size_t Size, std::wstring Key)
+            std::shared_ptr<Hook> Create(const uintptr_t Address, const T Detour, const size_t Size, std::wstring Key)
             {
                 if (Key.empty() == true)
                 {
@@ -34,7 +34,7 @@ namespace RenHook
             }
 
             template<typename T>
-            static std::shared_ptr<Hook> Create(const std::wstring& Module, const std::wstring& Function, const T Detour, const size_t Size, std::wstring Key)
+            std::shared_ptr<Hook> Create(const std::wstring& Module, const std::wstring& Function, const T Detour, const size_t Size, std::wstring Key)
             {
                 if (Key.empty() == true)
                 {
@@ -82,7 +82,7 @@ namespace RenHook
             }
 
             template<typename T>
-            static std::shared_ptr<Hook> Create(const std::wstring& Pattern, const T Detour, const size_t Size, std::wstring Key)
+            std::shared_ptr<Hook> Create(const std::wstring& Pattern, const T Detour, const size_t Size, std::wstring Key)
             {
                 if (Key.empty() == true)
                 {
