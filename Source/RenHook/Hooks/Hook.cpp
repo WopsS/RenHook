@@ -17,6 +17,8 @@ RenHook::Hook::Hook(const uintptr_t Address, const uintptr_t Detour, const size_
     Memory::Protection Protection(Address, Size);
     Protection.Change(PAGE_EXECUTE_READWRITE);
 
+    // TODO: Check for relative jumps and fix them.
+
     auto HookSize = WriteJump(Address, Detour, Size);
 
     // Jump back to the original code (16 bytes).
