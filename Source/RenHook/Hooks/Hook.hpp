@@ -1,5 +1,7 @@
 #pragma once
 
+#include <RenHook/Memory/Block.hpp>
+
 namespace RenHook
 {
     class Hook
@@ -27,7 +29,37 @@ namespace RenHook
             return RenHook::Managers::Hooks::Create(Pattern, Detour, Size, Key);
         }
 
+        template<typename Result, typename CallType, typename... Args>
+        Result Call(Args&& ...args)
+        {
+            return GetOriginal<CallType>()(std::forward<Args>(args)...);
+        }
+
+        template<typename T>
+        T GetOriginal()
+        {
+            return reinterpret_cast<T>(m_memoryBlock.GetAddress());
+        }
+
     private:
 
+        template<typename T>
+        const T CalculateDisplacement(const uintptr_t From, const uintptr_t To, const size_t Size) const
+        {
+            if (To < From)
+            {
+                return static_cast<T>(0 - (From - To) - Size);
+            }
+
+            return static_cast<T>(To - (From + Size));
+        }
+
+        const size_t WriteJump(const uintptr_t Address, const uintptr_t Detour, const size_t Size) const;
+
+        uintptr_t m_address;
+
+        size_t m_size;
+
+        RenHook::Memory::Block m_memoryBlock;
     };
 }
