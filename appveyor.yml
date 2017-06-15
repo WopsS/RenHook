@@ -15,7 +15,7 @@ install:
   - ps: 7z e premake-*-windows.zip -o"$env:premake_dir"
 before_build:
   - ps: cd "$env:premake_dir"
-  - ps: ./GenerateVisualStudioProject.bat
+  - ps: ./GenerateVisualStudioProjects.bat
 build:
   verbosity: minimal
 artifacts:

@@ -11,7 +11,7 @@ workspace("RenHook")
     configurations({ "Debug", "Release" })
     defines({ "_CRT_SECURE_NO_WARNINGS" })
     flags({ "C++14" })
-    location("Project")
+    location("Projects")
     startproject("RenHook")
 
     filter({ "configurations:Release" })
