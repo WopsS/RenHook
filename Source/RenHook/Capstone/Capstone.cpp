@@ -38,6 +38,11 @@ const size_t RenHook::Capstone::Disassemble(const uintptr_t Address, const size_
 
 const size_t RenHook::Capstone::GetInstructionSize(size_t Index) const
 {
+    if (Index < 0 || Index >= m_instructions)
+    {
+        return 0;
+    }
+
     return m_instructionInfo[Index].size;
 }
 
