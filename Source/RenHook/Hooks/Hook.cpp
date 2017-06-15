@@ -20,15 +20,15 @@ RenHook::Hook::Hook(const uintptr_t Address, const uintptr_t Detour)
 
     // TODO: Check for relative jumps and fix them.
 
-    //auto HookSize = WriteJump(Address, Detour, m_size);
+    auto HookSize = WriteJump(Address, Detour, m_size);
 
     // Jump back to the original code (16 bytes).
-    //WriteJump(m_memoryBlock.GetAddress() + m_size, Address + m_size, 16);
+    WriteJump(m_memoryBlock->GetAddress() + m_size, Address + m_size, 16);
 
     // Set unused bytes as NOP.
-    //if (HookSize < m_size)
+    if (HookSize < m_size)
     {
-        //std::memset(reinterpret_cast<uintptr_t*>(Address + HookSize), 0x90, m_size - HookSize);
+        std::memset(reinterpret_cast<uintptr_t*>(Address + HookSize), 0x90, m_size - HookSize);
     }
 
     Protection.Restore();
