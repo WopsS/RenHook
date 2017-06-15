@@ -22,6 +22,7 @@ before_build:
   - ps: cd "$env:premake_dir"
   - ps: ./GenerateVisualStudioProjects.bat
 build:
+  project: Premake/Projects/RenHook.sln
   verbosity: minimal
 artifacts:
 - path: Build\$(configuration)
