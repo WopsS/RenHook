@@ -39,4 +39,5 @@
 #define LOG_LINE_SEPARATOR std::endl
 #endif
 
+#include <capstone.h>
 #include <RenHook/Hooks/Hooks.hpp>
