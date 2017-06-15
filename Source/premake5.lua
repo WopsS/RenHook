@@ -16,6 +16,7 @@ project("RenHook")
 
     filter({})
 
-    includedirs({ "." })
+    includedirs({ ".", "../Dependencies/Capstone/Capstone/include" })   
+    links({ "Capstone" })
 
     files({  "**.cpp", "**.hpp" })
