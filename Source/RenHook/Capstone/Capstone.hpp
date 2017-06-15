@@ -24,6 +24,8 @@ namespace RenHook
 
     private:
 
+        void ReleaseInstructions();
+
         csh m_handle;
 
         cs_insn* m_instructionInfo;
