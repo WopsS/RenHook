@@ -3,9 +3,9 @@
 
 std::map<std::wstring, std::shared_ptr<RenHook::Hook>> RenHook::Managers::Hooks::Private::Hooks;
 
-std::shared_ptr<RenHook::Hook> RenHook::Managers::Hooks::Private::Create(const uintptr_t Address, const uintptr_t Detour, const size_t Size, const std::wstring& Key)
+std::shared_ptr<RenHook::Hook> RenHook::Managers::Hooks::Private::Create(const uintptr_t Address, const uintptr_t Detour, const std::wstring& Key)
 {
-    auto Result = std::make_shared<Hook>(Address, Detour, Size);
+    auto Result = std::make_shared<Hook>(Address, Detour);
     Hooks.emplace(Key, Result);
 
     return Result;

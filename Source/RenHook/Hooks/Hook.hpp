@@ -1,5 +1,6 @@
 #pragma once
 
+#include <RenHook/Capstone/Capstone.hpp>
 #include <RenHook/Memory/Block.hpp>
 
 namespace RenHook
@@ -8,25 +9,25 @@ namespace RenHook
     {
     public:
 
-        Hook(const uintptr_t Address, const uintptr_t Detour, const size_t Size);
+        Hook(const uintptr_t Address, const uintptr_t Detour);
         ~Hook();
 
         template<typename T>
-        static std::shared_ptr<Hook> Create(const uintptr_t Address, const T Detour, const size_t Size, const std::wstring& Key = L"")
+        static std::shared_ptr<Hook> Create(const uintptr_t Address, const T Detour, const std::wstring& Key = L"")
         {
-            return RenHook::Managers::Hooks::Create(Address, Detour, Size, Key);
+            return RenHook::Managers::Hooks::Create(Address, Detour, Key);
         }
 
         template<typename T>
-        static std::shared_ptr<Hook> Create(const std::wstring& Module, const std::wstring& Function, const T Detour, const size_t Size, const std::wstring& Key = L"")
+        static std::shared_ptr<Hook> Create(const std::wstring& Module, const std::wstring& Function, const T Detour, const std::wstring& Key = L"")
         {
-            return RenHook::Managers::Hooks::Create(Module, Function, Detour, Size, Key);
+            return RenHook::Managers::Hooks::Create(Module, Function, Detour, Key);
         }
 
         template<typename T>
-        static std::shared_ptr<Hook> Create(const std::wstring& Pattern, const T Detour, const size_t Size, const std::wstring& Key = L"")
+        static std::shared_ptr<Hook> Create(const std::wstring& Pattern, const T Detour, const std::wstring& Key = L"")
         {
-            return RenHook::Managers::Hooks::Create(Pattern, Detour, Size, Key);
+            return RenHook::Managers::Hooks::Create(Pattern, Detour, Key);
         }
 
         static std::shared_ptr<Hook> Get(const uintptr_t Address);
@@ -50,7 +51,7 @@ namespace RenHook
         template<typename T>
         T GetOriginal()
         {
-            return reinterpret_cast<T>(m_memoryBlock.GetAddress());
+            return reinterpret_cast<T>(m_memoryBlock->GetAddress());
         }
 
     private:
@@ -66,12 +67,16 @@ namespace RenHook
             return static_cast<T>(To - (From + Size));
         }
 
+        const size_t CheckSize(const RenHook::Capstone& Capstone, const size_t MinimumSize) const;
+
+        const size_t GetMinimumSize(const uintptr_t Address) const;
+
         const size_t WriteJump(const uintptr_t Address, const uintptr_t Detour, const size_t Size) const;
 
         uintptr_t m_address;
 
         size_t m_size;
 
-        RenHook::Memory::Block m_memoryBlock;
+        std::unique_ptr<RenHook::Memory::Block> m_memoryBlock;
     };
 }

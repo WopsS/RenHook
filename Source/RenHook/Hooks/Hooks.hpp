@@ -11,13 +11,13 @@ namespace RenHook
         {
             namespace Private
             {
-                std::shared_ptr<Hook> Create(const uintptr_t Address, const uintptr_t Detour, const size_t Size, const std::wstring& Key);
+                std::shared_ptr<Hook> Create(const uintptr_t Address, const uintptr_t Detour, const std::wstring& Key);
 
                 extern std::map<std::wstring, std::shared_ptr<RenHook::Hook>> Hooks;
             }
 
             template<typename T>
-            std::shared_ptr<Hook> Create(const uintptr_t Address, const T Detour, const size_t Size, std::wstring Key)
+            std::shared_ptr<Hook> Create(const uintptr_t Address, const T Detour, std::wstring Key)
             {
                 if (Key.empty() == true)
                 {
@@ -30,11 +30,11 @@ namespace RenHook
                     return Private::Hooks.at(Key);
                 }
 
-                return Private::Create(Address, reinterpret_cast<uintptr_t>(Detour), Size, Key);
+                return Private::Create(Address, reinterpret_cast<uintptr_t>(Detour), Key);
             }
 
             template<typename T>
-            std::shared_ptr<Hook> Create(const std::wstring& Module, const std::wstring& Function, const T Detour, const size_t Size, std::wstring Key)
+            std::shared_ptr<Hook> Create(const std::wstring& Module, const std::wstring& Function, const T Detour, std::wstring Key)
             {
                 if (Key.empty() == true)
                 {
@@ -78,11 +78,11 @@ namespace RenHook
                 LOG_DEBUG << std::quoted(Function) << L" found at " << std::hex << std::showbase << reinterpret_cast<uintptr_t>(Address) << L" in module " << std::quoted(Module) << LOG_LINE_SEPARATOR;
 #endif
 
-                return Private::Create(reinterpret_cast<uintptr_t>(Address), reinterpret_cast<uintptr_t>(Detour), Size, Key);
+                return Private::Create(reinterpret_cast<uintptr_t>(Address), reinterpret_cast<uintptr_t>(Detour), Key);
             }
 
             template<typename T>
-            std::shared_ptr<Hook> Create(const std::wstring& Pattern, const T Detour, const size_t Size, std::wstring Key)
+            std::shared_ptr<Hook> Create(const std::wstring& Pattern, const T Detour, std::wstring Key)
             {
                 if (Key.empty() == true)
                 {
@@ -113,7 +113,7 @@ namespace RenHook
                     return nullptr;
                 }
 
-                return Private::Create(Address, reinterpret_cast<uintptr_t>(Detour), Size, Key);
+                return Private::Create(Address, reinterpret_cast<uintptr_t>(Detour), Key);
             }
 
             std::shared_ptr<Hook> Get(const uintptr_t Address);
