@@ -71,7 +71,7 @@ namespace RenHook
 
         const size_t GetMinimumSize(const uintptr_t Address) const;
 
-        const void RelocateRIP() const;
+        const void RelocateRIP(const uintptr_t From, const uintptr_t To) const;
 
         const size_t WriteJump(const uintptr_t Address, const uintptr_t Detour, const size_t Size) const;
 
