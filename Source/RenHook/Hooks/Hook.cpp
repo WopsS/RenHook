@@ -6,51 +6,63 @@
 RenHook::Hook::Hook(const uintptr_t Address, const uintptr_t Detour)
     : m_address(Address)
     , m_size(GetMinimumSize(Address))
-    , m_memoryBlock(Address, m_size)
+    , m_memoryBlock(nullptr)
 {
-    RenHook::Managers::Threads Threads;
-    Threads.Suspend();
-
-    // Backup the original bytes.
-    m_memoryBlock.CopyFrom(Address, m_size);
-
-    Memory::Protection Protection(Address, m_size);
-    Protection.Change(PAGE_EXECUTE_READWRITE);
-
-    // Relocate RIP addresses with our address.
-    RelocateRIP(Address, m_memoryBlock.GetAddress());
-
-    auto HookSize = WriteJump(Address, Detour, m_size);
-
-    // Jump back to the original code (16 bytes).
-    WriteJump(m_memoryBlock.GetAddress() + m_size, Address + m_size, 16);
-
-    // Set unused bytes as NOP.
-    if (HookSize < m_size)
+    if (m_size >= 5)
     {
-        std::memset(reinterpret_cast<uintptr_t*>(Address + HookSize), 0x90, m_size - HookSize);
-    }
+        m_memoryBlock = std::make_unique<RenHook::Memory::Block>(Address, m_size);
 
-    Protection.Restore();
-    Threads.Resume();
+        RenHook::Managers::Threads Threads;
+        Threads.Suspend();
+
+        // Backup the original bytes.
+        m_memoryBlock->CopyFrom(Address, m_size);
+
+        Memory::Protection Protection(Address, m_size);
+        Protection.Change(PAGE_EXECUTE_READWRITE);
+
+        // Relocate RIP addresses with our address.
+        RelocateRIP(Address, m_memoryBlock->GetAddress());
+
+        auto HookSize = WriteJump(Address, Detour, m_size);
+
+        // Jump back to the original code (16 bytes).
+        WriteJump(m_memoryBlock->GetAddress() + m_size, Address + m_size, 16);
+
+        // Set unused bytes as NOP.
+        if (HookSize < m_size)
+        {
+            std::memset(reinterpret_cast<uintptr_t*>(Address + HookSize), 0x90, m_size - HookSize);
+        }
+
+        Protection.Restore();
+        Threads.Resume();
+    }
+    else
+    {
+        LOG_ERROR << L"Can't create a new hook at address " << std::hex << std::showbase << Address << L"because size is lower than 5, size is " << std::dec << m_size << LOG_LINE_SEPARATOR;
+    }
 }
 
 RenHook::Hook::~Hook()
 {
-    RenHook::Managers::Threads Threads;
-    Threads.Suspend();
+    if (m_memoryBlock != nullptr)
+    {
+        RenHook::Managers::Threads Threads;
+        Threads.Suspend();
 
-    Memory::Protection Protection(m_address, m_size);
-    Protection.Change(PAGE_EXECUTE_READWRITE);
+        Memory::Protection Protection(m_address, m_size);
+        Protection.Change(PAGE_EXECUTE_READWRITE);
 
-    // Restore the original bytes.
-    m_memoryBlock.CopyTo(m_address, m_size);
+        // Restore the original bytes.
+        m_memoryBlock->CopyTo(m_address, m_size);
 
-    // Relocate RIP addresses back to their original value.
-    RelocateRIP(m_memoryBlock.GetAddress(), m_address);
+        // Relocate RIP addresses back to their original value.
+        RelocateRIP(m_memoryBlock->GetAddress(), m_address);
 
-    Protection.Restore();
-    Threads.Resume();
+        Protection.Restore();
+        Threads.Resume();
+    }
 }
 
 std::shared_ptr<RenHook::Hook> RenHook::Hook::Get(const uintptr_t Address)
@@ -252,8 +264,8 @@ const size_t RenHook::Hook::WriteJump(const uintptr_t Address, const uintptr_t D
             */
             Bytes = { 0xFF, 0x25, 0xCC, 0xCC, 0xCC, 0xCC };
 
-            // Add the displacement right after our jump back to the original function which is located at "m_memoryBlock.GetAddress() + Size" and has a size of 16 bytes.
-            auto Displacement = m_memoryBlock.GetAddress() + Size + 17;
+            // Add the displacement right after our jump back to the original function which is located at "m_memoryBlock->GetAddress() + Size" and has a size of 16 bytes.
+            auto Displacement = m_memoryBlock->GetAddress() + Size + 17;
 
             // Write the address in memory at RIP + Displacement.
             *reinterpret_cast<uintptr_t*>(Displacement) = Detour;

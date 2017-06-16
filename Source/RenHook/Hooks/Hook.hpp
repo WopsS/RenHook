@@ -79,6 +79,6 @@ namespace RenHook
 
         size_t m_size;
 
-        RenHook::Memory::Block m_memoryBlock;
+        std::unique_ptr<RenHook::Memory::Block> m_memoryBlock;
     };
 }
