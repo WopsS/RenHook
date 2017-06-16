@@ -18,7 +18,7 @@ RenHook::Hook::Hook(const uintptr_t Address, const uintptr_t Detour)
     Memory::Protection Protection(Address, m_size);
     Protection.Change(PAGE_EXECUTE_READWRITE);
 
-    // TODO: Check for relative jumps and fix them.
+    RelocateRIP();
 
     auto HookSize = WriteJump(Address, Detour, m_size);
 
@@ -120,6 +120,73 @@ const size_t RenHook::Hook::GetMinimumSize(const uintptr_t Address) const
     }
 
     return Length;
+}
+
+const void RenHook::Hook::RelocateRIP() const
+{
+    RenHook::Capstone Capstone;
+    auto Instructions = Capstone.Disassemble(m_address, m_size);
+
+    for (size_t i = 0; i < Instructions; i++)
+    {
+        auto Instruction = Capstone.GetInstructionAt(i);
+        auto Structure = Instruction->detail->x86;
+
+        auto Mnemonic = std::string(Instruction->mnemonic);
+
+        if (Mnemonic == "int3" || Structure.op_count > 1)
+        {
+            continue;
+        }
+        else if (Mnemonic != "jmp")
+        {
+            LOG_ERROR << L"Instruction has an unhandled mnemonic ("<< Instruction->mnemonic << L") at address " << std::hex << std::showbase << Instruction->address << LOG_LINE_SEPARATOR;
+            continue;
+        }
+
+        // Check all operands.
+        for (size_t j = 0; j < Structure.op_count; j++)
+        {
+            auto Operand = Structure.operands[j];
+            auto InstructionAddress = reinterpret_cast<uint8_t*>(m_memoryBlock->GetAddress() + Instruction->address - m_address);
+
+            uintptr_t DisplacementAddress = 0;
+
+            // This is a hacky way to relocate RIP because Capstone doesn't let us access "displacementOffset" from "InternalInstruction" struct and I don't want to check the bytes.
+            if (Operand.type == X86_OP_MEM && Operand.mem.base == X86_REG_RIP)
+            {
+                // Calculate the displacement address.
+                DisplacementAddress = Instruction->address + Instruction->size + Structure.disp;
+
+                // Set all instruction bytes to NOP.
+                std::memset(InstructionAddress, 0x90, Instruction->size);
+            }
+            else if (Operand.type == X86_OP_IMM)
+            {
+                // Calculate the displacement address.
+                DisplacementAddress = Structure.operands[0].imm;
+
+                // Set all instruction bytes to NOP.
+                std::memset(InstructionAddress, 0x90, Instruction->size);
+            }
+
+            if (DisplacementAddress > 0)
+            {
+                // Write the new instruction.
+                if (Instruction->size >= 6)
+                {
+                    *reinterpret_cast<uint8_t*>(InstructionAddress) = 0xFF;
+                    *reinterpret_cast<uint8_t*>(InstructionAddress + 1) = 0x25;
+                    *reinterpret_cast<int32_t*>(InstructionAddress + 2) = CalculateDisplacement<int32_t>(reinterpret_cast<uintptr_t>(InstructionAddress), DisplacementAddress, 6);
+                }
+                else
+                {
+                    *reinterpret_cast<uint8_t*>(InstructionAddress) = 0xE9;
+                    *reinterpret_cast<int32_t*>(InstructionAddress + 1) = CalculateDisplacement<int32_t>(reinterpret_cast<uintptr_t>(InstructionAddress), DisplacementAddress, 5);
+                }
+            }
+        }
+    }
 }
 
 const size_t RenHook::Hook::WriteJump(const uintptr_t Address, const uintptr_t Detour, const size_t Size) const

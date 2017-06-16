@@ -10,6 +10,10 @@ RenHook::Capstone::Capstone()
     {
         LOG_ERROR << "Fail to initialize Capstone handle";
     }
+    else
+    {
+        cs_option(m_handle, CS_OPT_DETAIL, CS_OPT_ON);
+    }
 }
 
 RenHook::Capstone::~Capstone()
@@ -34,6 +38,16 @@ const size_t RenHook::Capstone::Disassemble(const uintptr_t Address, const size_
     }
 
     return Result;
+}
+
+cs_insn* RenHook::Capstone::GetInstructionAt(size_t Index) const
+{
+    if (Index < 0 || Index >= m_instructions)
+    {
+        return nullptr;
+    }
+
+    return &m_instructionInfo[Index];
 }
 
 const size_t RenHook::Capstone::GetInstructionSize(size_t Index) const

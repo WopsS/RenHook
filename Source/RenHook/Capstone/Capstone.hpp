@@ -18,6 +18,8 @@ namespace RenHook
 
         const size_t Disassemble(const uintptr_t Address, const size_t Size);
 
+        cs_insn* GetInstructionAt(size_t Index) const;
+
         const size_t GetInstructionSize(size_t Index) const;
 
         const size_t GetTotalNumberOfInstruction() const;
