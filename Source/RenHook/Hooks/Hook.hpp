@@ -51,7 +51,7 @@ namespace RenHook
         template<typename T>
         T GetOriginal()
         {
-            return reinterpret_cast<T>(m_memoryBlock.GetAddress());
+            return reinterpret_cast<T>(m_memoryBlock->GetAddress());
         }
 
     private:
