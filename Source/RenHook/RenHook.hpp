@@ -13,10 +13,14 @@
 #include <Windows.h>
 #include <TlHelp32.h>
 
-#ifdef CUSTOM_LOGGER
-#include CUSTOM_LOGGER
-#endif
+#ifdef RENHOOK_USE_ODLIB
+#include <ODLib/ODLib.hpp>
+#include <ODLib/Logger/Synchronous.hpp>
 
+#ifndef LOG_LINE_SEPARATOR
+#define LOG_LINE_SEPARATOR ""
+#endif
+#else
 #ifdef _DEBUG
 #ifndef LOG_DEBUG
 #define LOG_DEBUG std::wcout << L"[DEBUG] "
@@ -37,6 +41,7 @@
 
 #ifndef LOG_LINE_SEPARATOR
 #define LOG_LINE_SEPARATOR std::endl
+#endif
 #endif
 
 #include <capstone.h>
