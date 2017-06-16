@@ -54,6 +54,8 @@ namespace RenHook
             return reinterpret_cast<T>(m_memoryBlock->GetAddress());
         }
 
+        const bool IsValid() const;
+
     private:
 
         template<typename T>

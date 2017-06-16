@@ -30,7 +30,16 @@ namespace RenHook
                     return Private::Hooks.at(Key);
                 }
 
-                return Private::Create(Address, reinterpret_cast<uintptr_t>(Detour), Key);
+                auto Result = Private::Create(Address, reinterpret_cast<uintptr_t>(Detour), Key);
+
+#ifdef _DEBUG
+                if (Result->IsValid() == true)
+                {
+                    LOG_DEBUG << L"Function at " << std::hex << std::showbase << reinterpret_cast<uintptr_t>(Address) << L" was successfully hooked" << LOG_LINE_SEPARATOR;
+                }
+#endif
+
+                return Result
             }
 
             template<typename T>
@@ -74,11 +83,18 @@ namespace RenHook
                     return nullptr;
                 }
 
+                auto Result = Private::Create(reinterpret_cast<uintptr_t>(Address), reinterpret_cast<uintptr_t>(Detour), Key);
+
 #ifdef _DEBUG
                 LOG_DEBUG << std::quoted(Function) << L" found at " << std::hex << std::showbase << reinterpret_cast<uintptr_t>(Address) << L" in module " << std::quoted(Module) << LOG_LINE_SEPARATOR;
+
+                if (Result->IsValid() == true)
+                {
+                    LOG_DEBUG << L"Function " << std::quoted(Key) << L" found at " << std::hex << std::showbase << reinterpret_cast<uintptr_t>(Address) << L" was successfully hooked" << LOG_LINE_SEPARATOR;
+                }
 #endif
 
-                return Private::Create(reinterpret_cast<uintptr_t>(Address), reinterpret_cast<uintptr_t>(Detour), Key);
+                return Result
             }
 
             template<typename T>
@@ -113,7 +129,16 @@ namespace RenHook
                     return nullptr;
                 }
 
-                return Private::Create(Address, reinterpret_cast<uintptr_t>(Detour), Key);
+                auto Result = Private::Create(Address, reinterpret_cast<uintptr_t>(Detour), Key);
+
+#ifdef _DEBUG
+                if (Result->IsValid() == true)
+                {
+                    LOG_DEBUG << L"Function with pattern " << std::quoted(Pattern) << L" was successfully hooked" << LOG_LINE_SEPARATOR;
+                }
+#endif
+
+                return Result
             }
 
             std::shared_ptr<Hook> Get(const uintptr_t Address);
