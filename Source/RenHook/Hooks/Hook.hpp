@@ -51,7 +51,7 @@ namespace RenHook
         template<typename T>
         T GetOriginal()
         {
-            return reinterpret_cast<T>(m_memoryBlock->GetAddress());
+            return reinterpret_cast<T>(m_memoryBlock.GetAddress());
         }
 
     private:
@@ -79,6 +79,6 @@ namespace RenHook
 
         size_t m_size;
 
-        std::unique_ptr<RenHook::Memory::Block> m_memoryBlock;
+        RenHook::Memory::Block m_memoryBlock;
     };
 }

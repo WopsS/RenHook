@@ -5,15 +5,14 @@
 
 RenHook::Hook::Hook(const uintptr_t Address, const uintptr_t Detour)
     : m_address(Address)
+    , m_size(GetMinimumSize(Address))
+    , m_memoryBlock(Address, m_size)
 {
     RenHook::Managers::Threads Threads;
     Threads.Suspend();
 
-    m_size = GetMinimumSize(Address);
-    m_memoryBlock = std::make_unique<RenHook::Memory::Block>(Address, m_size);
-
     // Backup the original bytes.
-    m_memoryBlock->CopyFrom(Address, m_size);
+    m_memoryBlock.CopyFrom(Address, m_size);
 
     Memory::Protection Protection(Address, m_size);
     Protection.Change(PAGE_EXECUTE_READWRITE);
@@ -23,7 +22,7 @@ RenHook::Hook::Hook(const uintptr_t Address, const uintptr_t Detour)
     auto HookSize = WriteJump(Address, Detour, m_size);
 
     // Jump back to the original code (16 bytes).
-    WriteJump(m_memoryBlock->GetAddress() + m_size, Address + m_size, 16);
+    WriteJump(m_memoryBlock.GetAddress() + m_size, Address + m_size, 16);
 
     // Set unused bytes as NOP.
     if (HookSize < m_size)
@@ -44,7 +43,7 @@ RenHook::Hook::~Hook()
     Protection.Change(PAGE_EXECUTE_READWRITE);
 
     // Restore the original bytes.
-    m_memoryBlock->CopyTo(m_address, m_size);
+    m_memoryBlock.CopyTo(m_address, m_size);
 
     Protection.Restore();
     Threads.Resume();
@@ -82,44 +81,44 @@ void RenHook::Hook::Remove(const std::wstring& Module, const std::wstring& Funct
 
 const size_t RenHook::Hook::CheckSize(const RenHook::Capstone& Capstone, const size_t MinimumSize) const
 {
-    size_t Result = 0;
+    size_t Size = 0;
 
     for (size_t i = 0; i < Capstone.GetTotalNumberOfInstruction(); i++)
     {
-        Result += Capstone.GetInstructionSize(i);
+        Size += Capstone.GetInstructionSize(i);
 
-        if (Result >= MinimumSize)
+        if (Size >= MinimumSize)
         {
-            break;
+            return Size;
         }
     }
 
-    return Result >= MinimumSize ? Result : 0;
+    return 0;
 }
 
 const size_t RenHook::Hook::GetMinimumSize(const uintptr_t Address) const
 {
-    size_t Length = 0;
+    size_t Size = 0;
 
     RenHook::Capstone Capstone;
     Capstone.Disassemble(Address, 128);
 
     // Check if we can do a 16 byte jump.
-    Length = CheckSize(Capstone, 16);
+    Size = CheckSize(Capstone, 16);
 
     // Check if we can do a 6 byte jump if we can't do a 16 byte jump.
-    if (Length == 0)
+    if (Size == 0)
     {
-        Length = CheckSize(Capstone, 6);
+        Size = CheckSize(Capstone, 6);
 
         // Check if we can do a 5 byte jump if we can't do a 6 byte jump.
-        if (Length == 0)
+        if (Size == 0)
         {
-            Length = CheckSize(Capstone, 5);
+            Size = CheckSize(Capstone, 5);
         }
     }
 
-    return Length;
+    return Size;
 }
 
 const void RenHook::Hook::RelocateRIP() const
@@ -148,7 +147,7 @@ const void RenHook::Hook::RelocateRIP() const
         for (size_t j = 0; j < Structure.op_count; j++)
         {
             auto Operand = Structure.operands[j];
-            auto InstructionAddress = reinterpret_cast<uint8_t*>(m_memoryBlock->GetAddress() + Instruction->address - m_address);
+            auto InstructionAddress = reinterpret_cast<uint8_t*>(m_memoryBlock.GetAddress() + Instruction->address - m_address);
 
             uintptr_t DisplacementAddress = 0;
 
@@ -228,7 +227,7 @@ const size_t RenHook::Hook::WriteJump(const uintptr_t Address, const uintptr_t D
             Bytes = { 0xFF, 0x25, 0xCC, 0xCC, 0xCC, 0xCC };
 
             // Add the displacement right after our jump back to the original function which is located at "m_memoryBlock.GetAddress() + Size" and has a size of 16 bytes.
-            auto Displacement = m_memoryBlock->GetAddress() + Size + 17;
+            auto Displacement = m_memoryBlock.GetAddress() + Size + 17;
 
             // Write the address in memory at RIP + Displacement.
             *reinterpret_cast<uintptr_t*>(Displacement) = Detour;
