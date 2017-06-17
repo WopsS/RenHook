@@ -152,12 +152,6 @@ const void RenHook::Hook::RelocateRIP(const uintptr_t From, const uintptr_t To) 
         auto Instruction = Capstone.GetInstructionAt(i);
         auto& Structure = Instruction->detail->x86;
 
-        // Skip instructions like "sub something, something".
-        if (Structure.op_count > 1)
-        {
-            continue;
-        }
-
         // Check all operands.
         for (size_t j = 0; j < Structure.op_count; j++)
         {
@@ -172,6 +166,12 @@ const void RenHook::Hook::RelocateRIP(const uintptr_t From, const uintptr_t To) 
             }
             else if (Operand.type == X86_OP_IMM)
             {
+                // Skip instructions like "sub something, something".
+                if (Structure.op_count > 1)
+                {
+                    continue;
+                }
+
                 // Calculate the displacement address.
                 DisplacementAddress = Structure.operands[0].imm;
             }
