@@ -62,6 +62,10 @@ RenHook::Hook::~Hook()
 
         Protection.Restore();
         Threads.Resume();
+
+#ifdef _DEBUG
+        LOG_DEBUG << L"Hook for " << std::hex << std::showbase << m_address << L" was removed" << LOG_LINE_SEPARATOR;
+#endif
     }
 }
 
