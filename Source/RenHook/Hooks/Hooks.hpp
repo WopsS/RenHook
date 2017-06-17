@@ -151,7 +151,9 @@ namespace RenHook
 
             void Remove(const std::wstring& Key);
 
-            void Remove(const std::wstring& Module, const std::wstring& Function);          
+            void Remove(const std::wstring& Module, const std::wstring& Function);
+
+            void RemoveAll();
         }
     }
 }

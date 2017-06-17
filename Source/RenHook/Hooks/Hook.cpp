@@ -99,6 +99,11 @@ void RenHook::Hook::Remove(const std::wstring& Module, const std::wstring& Funct
     return RenHook::Managers::Hooks::Remove(Module, Function);
 }
 
+void RenHook::Hook::RemoveAll()
+{
+    RenHook::Managers::Hooks::RemoveAll();
+}
+
 const bool RenHook::Hook::IsValid() const
 {
     return m_size >= 5 && m_memoryBlock != nullptr && m_memoryBlock->GetAddress() > 0;

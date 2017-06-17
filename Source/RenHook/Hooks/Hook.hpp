@@ -42,6 +42,8 @@ namespace RenHook
 
         static void Remove(const std::wstring& Module, const std::wstring& Function);
 
+        static void RemoveAll();
+
         template<typename Result, typename CallType, typename... Args>
         Result Call(Args&& ...args)
         {

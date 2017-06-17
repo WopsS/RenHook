@@ -59,3 +59,8 @@ void RenHook::Managers::Hooks::Remove(const std::wstring& Module, const std::wst
 {
     Private::Hooks.erase(Module + L"::" + Function);
 }
+
+void RenHook::Managers::Hooks::RemoveAll()
+{
+    Private::Hooks.clear();
+}
