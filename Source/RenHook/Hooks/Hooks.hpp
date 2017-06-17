@@ -39,7 +39,7 @@ namespace RenHook
                 }
 #endif
 
-                return Result
+                return Result;
             }
 
             template<typename T>
@@ -94,7 +94,7 @@ namespace RenHook
                 }
 #endif
 
-                return Result
+                return Result;
             }
 
             template<typename T>
@@ -138,7 +138,7 @@ namespace RenHook
                 }
 #endif
 
-                return Result
+                return Result;
             }
 
             std::shared_ptr<Hook> Get(const uintptr_t Address);
