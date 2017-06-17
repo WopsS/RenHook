@@ -2,7 +2,8 @@
 #include <RenHook/Memory/Block.hpp>
 
 RenHook::Memory::Block::Block(const uintptr_t Address, size_t Size)
-    : m_size(Size)
+    : m_address(nullptr)
+    , m_size(Size)
 {
     // Add space to jump back to the original code.
     Size += 16 + sizeof(uintptr_t);
