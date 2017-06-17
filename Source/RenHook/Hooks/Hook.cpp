@@ -97,7 +97,7 @@ void RenHook::Hook::Remove(const std::wstring& Module, const std::wstring& Funct
 
 const bool RenHook::Hook::IsValid() const
 {
-    return m_size > 5 && m_memoryBlock != nullptr && m_memoryBlock->GetAddress() > 0;
+    return m_size >= 5 && m_memoryBlock != nullptr && m_memoryBlock->GetAddress() > 0;
 }
 
 const size_t RenHook::Hook::CheckSize(const RenHook::Capstone& Capstone, const size_t MinimumSize) const
