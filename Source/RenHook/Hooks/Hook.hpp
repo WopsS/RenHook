@@ -73,11 +73,15 @@ namespace RenHook
 
         const size_t CheckSize(const RenHook::Capstone& Capstone, const size_t MinimumSize) const;
 
+        const size_t CountConditionalJumps(const uintptr_t Address) const;
+
         const size_t GetMinimumSize(const uintptr_t Address) const;
+
+        const bool IsConditionalJump(const uint8_t* Bytes, const size_t Size) const;
 
         const void RelocateRIP(const uintptr_t From, const uintptr_t To) const;
 
-        const size_t WriteJump(const uintptr_t Address, const uintptr_t Detour, const size_t Size) const;
+        const size_t WriteJump(const uintptr_t From, const uintptr_t To, const size_t Size) const;
 
         uintptr_t m_address;
 

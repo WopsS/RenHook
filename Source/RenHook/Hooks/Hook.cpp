@@ -10,7 +10,8 @@ RenHook::Hook::Hook(const uintptr_t Address, const uintptr_t Detour)
 {
     if (m_size >= 5)
     {
-        m_memoryBlock = std::make_unique<RenHook::Memory::Block>(Address, m_size);
+        // Create our memory block with hook size + necessary size for conditional jumps.
+        m_memoryBlock = std::make_unique<RenHook::Memory::Block>(Address, m_size + (CountConditionalJumps(Address) * 16));
 
         RenHook::Managers::Threads Threads;
         Threads.Suspend();
@@ -126,6 +127,33 @@ const size_t RenHook::Hook::CheckSize(const RenHook::Capstone& Capstone, const s
     return 0;
 }
 
+const size_t RenHook::Hook::CountConditionalJumps(const uintptr_t Address) const
+{
+    size_t Result = 0;
+
+    RenHook::Capstone Capstone;
+    Capstone.Disassemble(Address, m_size);
+
+    for (size_t i = 0; i < Capstone.GetTotalNumberOfInstruction(); i++)
+    {
+        auto Instruction = Capstone.GetInstructionAt(i);
+        auto& Structure = Instruction->detail->x86;
+
+        // Check all operands.
+        for (size_t j = 0; j < Structure.op_count; j++)
+        {
+            auto& Operand = Structure.operands[j];
+
+            if (Operand.type == X86_OP_IMM && IsConditionalJump(Instruction->bytes, Instruction->size) == true)
+            {
+                Result++;
+            }
+        }
+    }
+
+    return Result;
+}
+
 const size_t RenHook::Hook::GetMinimumSize(const uintptr_t Address) const
 {
     size_t Size = 0;
@@ -151,10 +179,36 @@ const size_t RenHook::Hook::GetMinimumSize(const uintptr_t Address) const
     return Size;
 }
 
+const bool RenHook::Hook::IsConditionalJump(const uint8_t* Bytes, const size_t Size) const
+{
+    if (Size > 0)
+    {
+        // See https://software.intel.com/sites/default/files/managed/a4/60/325383-sdm-vol-2abcd.pdf (Jcc - Jump if Condition Is Met).
+
+        if (Bytes[0] == 0xE3)
+        {
+            return true;
+        }
+        else if (Bytes[0] >= 0x70 && Bytes[0] <= 0x7F)
+        {
+            return true;
+        }
+        else if ((Bytes[0] == 0x0F && Size > 1) && (Bytes[1] >= 0x80 && Bytes[1] <= 0x8F))
+        {
+            return true;
+        }
+    }
+
+
+    return false;
+}
+
 const void RenHook::Hook::RelocateRIP(const uintptr_t From, const uintptr_t To) const
 {
     RenHook::Capstone Capstone;
+
     auto Instructions = Capstone.Disassemble(From, m_size);
+    size_t NumberOfConditionalJumps = 0;
 
     for (size_t i = 0; i < Instructions; i++)
     {
@@ -212,6 +266,17 @@ const void RenHook::Hook::RelocateRIP(const uintptr_t From, const uintptr_t To) 
                 auto DisplacementSize = Instruction->size - UsedBytes;
                 auto InstructionAddress = To + Instruction->address - From;
 
+                if (IsConditionalJump(Instruction->bytes, Instruction->size) == true)
+                {
+                    NumberOfConditionalJumps++;
+
+                    // block_base_address + size_of_the_hook + (size_of_trampoline * total_number_of_conditional_jumps_until_now)
+                    auto JumpAddress = m_memoryBlock->GetAddress() + m_size + (16 * NumberOfConditionalJumps);
+                    WriteJump(JumpAddress, DisplacementAddress, 16);
+
+                    DisplacementAddress = JumpAddress;
+                }
+
                 switch (DisplacementSize)
                 {
                     case 1:
@@ -240,7 +305,7 @@ const void RenHook::Hook::RelocateRIP(const uintptr_t From, const uintptr_t To) 
     }
 }
 
-const size_t RenHook::Hook::WriteJump(const uintptr_t Address, const uintptr_t Detour, const size_t Size) const
+const size_t RenHook::Hook::WriteJump(const uintptr_t From, const uintptr_t To, const size_t Size) const
 {
     std::vector<uint8_t> Bytes;
 
@@ -256,12 +321,12 @@ const size_t RenHook::Hook::WriteJump(const uintptr_t Address, const uintptr_t D
         Bytes = { 0x50, 0x48, 0xB8, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0x48, 0x87, 0x04, 0x24, 0xC3 };
 
         // Set our detour function.
-        *reinterpret_cast<uintptr_t*>(Bytes.data() + 3) = Detour;
+        *reinterpret_cast<uintptr_t*>(Bytes.data() + 3) = To;
     }
     else
     {
         // If the displacement is less than 2048 MB do a near jump or if the hook size is equal with 5, otherwise do a far jump.
-        if (std::abs(reinterpret_cast<uintptr_t*>(Address) - reinterpret_cast<uintptr_t*>(Detour)) <= 0x7fff0000 || Size == 5)
+        if (std::abs(reinterpret_cast<uintptr_t*>(From) - reinterpret_cast<uintptr_t*>(To)) <= 0x7fff0000 || Size == 5)
         {
             /*
             * jmp 0xCCCCCCCC
@@ -269,7 +334,7 @@ const size_t RenHook::Hook::WriteJump(const uintptr_t Address, const uintptr_t D
             Bytes = { 0xE9, 0xCC, 0xCC, 0xCC, 0xCC };
 
             // Set our detour function.
-            *reinterpret_cast<int32_t*>(Bytes.data() + 1) = CalculateDisplacement<int32_t>(Address, Detour, Bytes.size());
+            *reinterpret_cast<int32_t*>(Bytes.data() + 1) = CalculateDisplacement<int32_t>(From, To, Bytes.size());
         }
         else
         {
@@ -282,10 +347,10 @@ const size_t RenHook::Hook::WriteJump(const uintptr_t Address, const uintptr_t D
             auto Displacement = m_memoryBlock->GetAddress() + Size + 17;
 
             // Write the address in memory at RIP + Displacement.
-            *reinterpret_cast<uintptr_t*>(Displacement) = Detour;
+            *reinterpret_cast<uintptr_t*>(Displacement) = To;
 
             // Set our detour function.
-            *reinterpret_cast<int32_t*>(Bytes.data() + 2) = CalculateDisplacement<int32_t>(Address, Displacement, Bytes.size());
+            *reinterpret_cast<int32_t*>(Bytes.data() + 2) = CalculateDisplacement<int32_t>(From, Displacement, Bytes.size());
         }
     }
 
@@ -293,7 +358,7 @@ const size_t RenHook::Hook::WriteJump(const uintptr_t Address, const uintptr_t D
     auto HookSize = sizeof(uint8_t) * Bytes.size();
 
     // Override the original bytes.
-    std::memcpy(reinterpret_cast<uintptr_t*>(Address), Bytes.data(), HookSize);
+    std::memcpy(reinterpret_cast<uintptr_t*>(From), Bytes.data(), HookSize);
 
     return HookSize;
 }
