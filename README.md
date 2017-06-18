@@ -17,7 +17,7 @@ An open-source **x64** hooking library for **Windows**.
 3. Extract the content of **[PREMAKE 5](https://github.com/premake/premake-core/releases)** into **Premake** directory.
 11. Go to the **Premake** directory and run **GenerateVisualStudioProjects.bat**.
 12. Open the solution (**RenHook.sln**) located in **Premake/Projects** directory.
-13. Build the project.
+13. Build the projects.
 
 ## Examples
 
