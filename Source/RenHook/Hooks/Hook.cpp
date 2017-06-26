@@ -114,7 +114,7 @@ const size_t RenHook::Hook::CheckSize(const RenHook::Capstone& Capstone, const s
 {
     size_t Size = 0;
 
-    for (size_t i = 0; i < Capstone.GetTotalNumberOfInstruction(); i++)
+    for (size_t i = 0; i < Capstone.GetTotalNumberOfInstructions(); i++)
     {
         Size += Capstone.GetInstructionSize(i);
 
