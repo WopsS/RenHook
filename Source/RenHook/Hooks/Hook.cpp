@@ -134,7 +134,7 @@ const size_t RenHook::Hook::CountConditionalJumps(const uintptr_t Address) const
     RenHook::Capstone Capstone;
     Capstone.Disassemble(Address, m_size);
 
-    for (size_t i = 0; i < Capstone.GetTotalNumberOfInstruction(); i++)
+    for (size_t i = 0; i < Capstone.GetTotalNumberOfInstructions(); i++)
     {
         auto Instruction = Capstone.GetInstructionAt(i);
         auto& Structure = Instruction->detail->x86;

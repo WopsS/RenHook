@@ -60,7 +60,7 @@ const size_t RenHook::Capstone::GetInstructionSize(size_t Index) const
     return m_instructionInfo[Index].size;
 }
 
-const size_t RenHook::Capstone::GetTotalNumberOfInstruction() const
+const size_t RenHook::Capstone::GetTotalNumberOfInstructions() const
 {
     return m_instructions;
 }

@@ -22,7 +22,7 @@ namespace RenHook
 
         const size_t GetInstructionSize(size_t Index) const;
 
-        const size_t GetTotalNumberOfInstruction() const;
+        const size_t GetTotalNumberOfInstructions() const;
 
     private:
 
