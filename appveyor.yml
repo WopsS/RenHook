@@ -25,7 +25,7 @@ build:
   project: Premake/Projects/RenHook.sln
   verbosity: minimal
 after_build:
-  - ps: 7z a %APPVEYOR_BUILD_FOLDER%/Build/%CONFIGURATION%/RenHook.zip %APPVEYOR_BUILD_FOLDER%/Build/%CONFIGURATION%/RenHook.*
+  - ps: 7z a %APPVEYOR_BUILD_FOLDER%\Build\%CONFIGURATION%\RenHook.zip %APPVEYOR_BUILD_FOLDER%\Build\%CONFIGURATION%\RenHook.*
 artifacts:
-- path: Build/$(configuration)/RenHook.zip
+- path: Build\$(configuration)\RenHook.zip
   name: RenHook
