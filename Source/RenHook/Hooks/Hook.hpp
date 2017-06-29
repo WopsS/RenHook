@@ -25,7 +25,7 @@ namespace RenHook
         }
 
         template<typename T>
-        static std::shared_ptr<Hook> Create(const std::wstring& Pattern, const T Detour, const std::wstring& Key = L"")
+        static std::shared_ptr<Hook> Create(std::wstring Pattern, const T Detour, const std::wstring& Key = L"")
         {
             return RenHook::Managers::Hooks::Create(Pattern, Detour, Key);
         }

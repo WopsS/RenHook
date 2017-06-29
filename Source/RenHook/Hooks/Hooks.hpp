@@ -98,18 +98,18 @@ namespace RenHook
             }
 
             template<typename T>
-            std::shared_ptr<Hook> Create(const std::wstring& Pattern, const T Detour, std::wstring Key)
+            std::shared_ptr<Hook> Create(std::wstring Pattern, const T Detour, std::wstring Key)
             {
                 if (Key.empty() == true)
                 {
                     Key = Pattern;
-
-                    // Remove whitespaces between bytes.
-                    Key.erase(std::remove_if(Key.begin(), Key.end(), ::isspace), Key.end());
                 }
 
+                // Remove whitespaces between bytes.
+                Pattern.erase(std::remove_if(Pattern.begin(), Pattern.end(), ::isspace), Pattern.end());
+
                 // Make sure the pattern is properly aligned.
-                if (Key.length() % 2 > 0)
+                if (Pattern.length() % 2 > 0)
                 {
                     LOG_ERROR << L"Pattern " << std::quoted(Pattern) << L" is not properly aligned" << LOG_LINE_SEPARATOR;
                     return nullptr;
