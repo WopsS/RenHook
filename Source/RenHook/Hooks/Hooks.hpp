@@ -134,7 +134,7 @@ namespace RenHook
 #ifdef _DEBUG
                 if (Result->IsValid() == true)
                 {
-                    LOG_DEBUG << L"Function with pattern " << std::quoted(Pattern) << L" (" << std::hex << std::showbase << reinterpret_cast<uintptr_t>(Address) << L") was successfully hooked" << LOG_LINE_SEPARATOR;
+                    LOG_DEBUG << L"Function with pattern " << std::quoted(Pattern) << L" (" << std::hex << std::showbase << Address << L") was successfully hooked" << LOG_LINE_SEPARATOR;
                 }
 #endif
 
