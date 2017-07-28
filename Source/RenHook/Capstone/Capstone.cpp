@@ -8,7 +8,7 @@ RenHook::Capstone::Capstone()
 {
     if (cs_open(CS_ARCH_X86, CS_MODE_64, &m_handle) != CS_ERR_OK)
     {
-        LOG_ERROR << "Fail to initialize Capstone handle";
+        LOG_ERROR << "Fail to initialize Capstone handle" << LOG_LINE_SEPARATOR;
     }
     else
     {
