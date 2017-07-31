@@ -13,7 +13,7 @@ RenHook::Threads::Thread::Thread(const uint32_t Id)
     }
 }
 
-RenHook::Threads::Thread::Thread(Thread && rhs)
+RenHook::Threads::Thread::Thread(Thread&& rhs)
     : m_thread(nullptr)
     , m_suspended(false)
 {
