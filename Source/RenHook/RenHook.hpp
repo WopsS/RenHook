@@ -14,8 +14,8 @@
 #include <TlHelp32.h>
 
 #ifdef RENHOOK_USE_ODLIB
-#include <ODLib/ODLib.hpp>
-#include <ODLib/Logger/Synchronous.hpp>
+#include <odlib/odlib.hpp>
+#include <odlib/logger/synchronous.hpp>
 
 #ifndef LOG_LINE_SEPARATOR
 #define LOG_LINE_SEPARATOR ""
