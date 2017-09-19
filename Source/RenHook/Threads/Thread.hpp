@@ -1,32 +1,29 @@
 #pragma once
 
-namespace RenHook
+namespace RenHook::Threads
 {
-    namespace Threads
+    class Thread
     {
-        class Thread
-        {
-        public:
+    public:
 
-            Thread(const uint32_t Id);
-            Thread(const Thread&) = delete;
-            Thread(Thread&& rhs);
+        Thread(const uint32_t Id);
+        Thread(const Thread&) = delete;
+        Thread(Thread&& rhs);
 
-            ~Thread();
+        ~Thread();
 
-            Thread& operator=(const Thread&) = delete;
+        Thread& operator=(const Thread&) = delete;
 
-            Thread& operator=(Thread&&) = delete;
+        Thread& operator=(Thread&&) = delete;
 
-            void Resume();
+        void Resume();
 
-            void Suspend();
+        void Suspend();
 
-        private:
+    private:
 
-            void* m_thread;
+        void* m_thread;
 
-            bool m_suspended;
-        };
-    }
+        bool m_suspended;
+    };
 }

@@ -1,11 +1,8 @@
 #pragma once
 
-namespace RenHook
+namespace RenHook::ExecutableMeta
 {
-    namespace ExecutableMeta
-    {
-        const uintptr_t GetBaseAddress();
+    const uintptr_t GetBaseAddress();
 
-        const uintptr_t GetEndAddress();
-    }
+    const uintptr_t GetEndAddress();
 }

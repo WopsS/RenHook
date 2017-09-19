@@ -1,9 +1,6 @@
 #pragma once
 
-namespace RenHook
+namespace RenHook::Pattern
 {
-    namespace Pattern
-    {
-        const uintptr_t Find(const std::wstring& Pattern);
-    }
+    const uintptr_t Find(const std::wstring& Pattern);
 }

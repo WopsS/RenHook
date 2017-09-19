@@ -2,27 +2,24 @@
 
 #include <RenHook/Threads/Thread.hpp>
 
-namespace RenHook
+namespace RenHook::Managers
 {
-    namespace Managers
+    class Threads
     {
-        class Threads
-        {
-        public:
+    public:
 
-            Threads() = default;
-            ~Threads() = default;
+        Threads() = default;
+        ~Threads() = default;
 
-            void Resume();
+        void Resume();
 
-            void Suspend();
+        void Suspend();
 
-        private:
+    private:
 
-            void Update();
+        void Update();
 
-            std::vector<RenHook::Threads::Thread> m_threads;
+        std::vector<RenHook::Threads::Thread> m_threads;
 
-        };
-    }
+    };
 }
