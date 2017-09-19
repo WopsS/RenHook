@@ -1,4 +1,4 @@
-require("premake", ">=5.0.0-alpha11")
+require("premake", ">=5.0.0-alpha12")
 
 basepath = path.getdirectory(os.getcwd());
 buildpath = function(p) return path.join(basepath, "Build", "%{cfg.buildcfg}", p).."/" end
@@ -9,8 +9,8 @@ workspace("RenHook")
     architecture("x86_64")
     characterset("Unicode")
     configurations({ "Debug", "Release" })
+    cppdialect("C++17")
     defines({ "_CRT_SECURE_NO_WARNINGS" })
-    flags({ "C++14" })
     location("Projects")
     startproject("RenHook")
 
