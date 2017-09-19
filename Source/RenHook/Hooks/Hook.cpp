@@ -105,6 +105,11 @@ void RenHook::Hook::RemoveAll()
     RenHook::Managers::Hooks::RemoveAll();
 }
 
+void RenHook::Hook::SetImageBase(const uintptr_t Value)
+{
+    RenHook::Managers::Hooks::Private::ImageBase = Value;
+}
+
 const bool RenHook::Hook::IsValid() const
 {
     return m_size >= 5 && m_memoryBlock != nullptr && m_memoryBlock->GetAddress() > 0;

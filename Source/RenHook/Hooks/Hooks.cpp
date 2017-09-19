@@ -1,6 +1,7 @@
 #include <RenHook/RenHook.hpp>
 #include <RenHook/Hooks/Hooks.hpp>
 
+uintptr_t RenHook::Managers::Hooks::Private::ImageBase = 0;
 std::map<std::wstring, std::shared_ptr<RenHook::Hook>> RenHook::Managers::Hooks::Private::Hooks;
 
 std::shared_ptr<RenHook::Hook> RenHook::Managers::Hooks::Private::Create(const uintptr_t Address, const uintptr_t Detour, const std::wstring& Key)

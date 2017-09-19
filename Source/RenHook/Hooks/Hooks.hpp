@@ -1,5 +1,6 @@
 #pragma once
 
+#include <RenHook/ExecutableMeta/ExecutableMeta.hpp>
 #include <RenHook/Hooks/Hook.hpp>
 #include <RenHook/Pattern/Pattern.hpp>
 
@@ -9,11 +10,13 @@ namespace RenHook::Managers::Hooks
     {
         std::shared_ptr<Hook> Create(const uintptr_t Address, const uintptr_t Detour, const std::wstring& Key);
 
+        extern uintptr_t ImageBase;
+
         extern std::map<std::wstring, std::shared_ptr<RenHook::Hook>> Hooks;
     }
 
     template<typename T>
-    std::shared_ptr<Hook> Create(const uintptr_t Address, const T Detour, std::wstring Key)
+    std::shared_ptr<Hook> Create(uintptr_t Address, const T Detour, bool IsInIDARange, std::wstring Key)
     {
         if (Key.empty() == true)
         {
@@ -24,6 +27,11 @@ namespace RenHook::Managers::Hooks
         if (Private::Hooks.find(Key) != Private::Hooks.end())
         {
             return Private::Hooks.at(Key);
+        }
+        
+        if (IsInIDARange == true)
+        {
+            Address = Address - Private::ImageBase + RenHook::ExecutableMeta::GetBaseAddress();
         }
 
         auto Result = Private::Create(Address, reinterpret_cast<uintptr_t>(Detour), Key);

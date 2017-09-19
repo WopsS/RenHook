@@ -13,9 +13,9 @@ namespace RenHook
         ~Hook();
 
         template<typename T>
-        static std::shared_ptr<Hook> Create(const uintptr_t Address, const T Detour, const std::wstring& Key = L"")
+        static std::shared_ptr<Hook> Create(const uintptr_t Address, const T Detour, const bool IsInIDARange = false, const std::wstring& Key = L"")
         {
-            return RenHook::Managers::Hooks::Create(Address, Detour, Key);
+            return RenHook::Managers::Hooks::Create(Address, Detour, IsInIDARange, Key);
         }
 
         template<typename T>
@@ -43,6 +43,8 @@ namespace RenHook
         static void Remove(const std::wstring& Module, const std::wstring& Function);
 
         static void RemoveAll();
+
+        static void SetImageBase(const uintptr_t Value);
 
         template<typename Result, typename CallType, typename... Args>
         Result Call(Args&& ...args)
