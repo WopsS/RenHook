@@ -34,16 +34,7 @@ namespace RenHook::Managers::Hooks
             Address = Address - Private::ImageBase + RenHook::ExecutableMeta::GetBaseAddress();
         }
 
-        auto Result = Private::Create(Address, reinterpret_cast<uintptr_t>(Detour), Key);
-
-#ifdef _DEBUG
-        if (Result->IsValid() == true)
-        {
-            LOG_DEBUG << L"Function at " << std::hex << std::showbase << Address << L" was successfully hooked" << LOG_LINE_SEPARATOR;
-        }
-#endif
-
-        return Result;
+        return Private::Create(Address, reinterpret_cast<uintptr_t>(Detour), Key);
     }
 
     template<typename T>
@@ -73,8 +64,7 @@ namespace RenHook::Managers::Hooks
             // Is it loaded now?
             if (Handle == nullptr)
             {
-                LOG_ERROR << L"Module " << std::quoted(Module) << L" cannot be found" << LOG_LINE_SEPARATOR;
-                return nullptr;
+                throw std::invalid_argument("Module not found");
             }
         }
 
@@ -83,22 +73,10 @@ namespace RenHook::Managers::Hooks
         // Do we have an invalid address?
         if (Address == nullptr)
         {
-            LOG_ERROR << L"Cannot find the address for " << std::quoted(Function) << L" in module " << std::quoted(Module) << LOG_LINE_SEPARATOR;
-            return nullptr;
+            throw std::invalid_argument("Function not found in module");
         }
 
-        auto Result = Private::Create(reinterpret_cast<uintptr_t>(Address), reinterpret_cast<uintptr_t>(Detour), Key);
-
-#ifdef _DEBUG
-        LOG_DEBUG << std::quoted(Function) << L" found at " << std::hex << std::showbase << reinterpret_cast<uintptr_t>(Address) << L" in module " << std::quoted(Module) << LOG_LINE_SEPARATOR;
-
-        if (Result->IsValid() == true)
-        {
-            LOG_DEBUG << L"Function " << std::quoted(Key) << L" (" << std::hex << std::showbase << reinterpret_cast<uintptr_t>(Address) << L") was successfully hooked" << LOG_LINE_SEPARATOR;
-        }
-#endif
-
-        return Result;
+        return Private::Create(reinterpret_cast<uintptr_t>(Address), reinterpret_cast<uintptr_t>(Detour), Key);;
     }
 
     template<typename T>
@@ -115,8 +93,7 @@ namespace RenHook::Managers::Hooks
         // Make sure the pattern is properly aligned.
         if (Pattern.length() % 2 > 0)
         {
-            LOG_ERROR << L"Pattern " << std::quoted(Pattern) << L" is not properly aligned" << LOG_LINE_SEPARATOR;
-            return nullptr;
+            throw std::invalid_argument("Pattern is not properly aligned");
         }
 
         // Check if we already have a hooked function with that pattern.
@@ -129,20 +106,10 @@ namespace RenHook::Managers::Hooks
 
         if (Address == 0)
         {
-            LOG_ERROR << L"Pattern " << std::quoted(Pattern) << L" not found" << LOG_LINE_SEPARATOR;
-            return nullptr;
+            throw std::runtime_error("Pattern not found");
         }
 
-        auto Result = Private::Create(Address, reinterpret_cast<uintptr_t>(Detour), Key);
-
-#ifdef _DEBUG
-        if (Result->IsValid() == true)
-        {
-            LOG_DEBUG << L"Function with pattern " << std::quoted(Pattern) << L" (" << std::hex << std::showbase << Address << L") was successfully hooked" << LOG_LINE_SEPARATOR;
-        }
-#endif
-
-        return Result;
+        return Private::Create(Address, reinterpret_cast<uintptr_t>(Detour), Key);;
     }
 
     std::shared_ptr<Hook> Get(const uintptr_t Address);

@@ -21,7 +21,6 @@ workspace("RenHook")
 
     group("Dependencies")
         include(dependenciespath("Capstone"))
-        include(dependenciespath("ODLib/Source"))
 
     group("")
         include(sourcepath())

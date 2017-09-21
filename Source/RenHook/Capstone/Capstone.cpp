@@ -6,13 +6,13 @@ RenHook::Capstone::Capstone()
     , m_instructionInfo(nullptr)
     , m_instructions(0)
 {
-    if (cs_open(CS_ARCH_X86, CS_MODE_64, &m_handle) != CS_ERR_OK)
+    if (cs_open(CS_ARCH_X86, CS_MODE_64, &m_handle) == CS_ERR_OK)
     {
-        LOG_ERROR << "Fail to initialize Capstone handle" << LOG_LINE_SEPARATOR;
+        cs_option(m_handle, CS_OPT_DETAIL, CS_OPT_ON);
     }
     else
     {
-        cs_option(m_handle, CS_OPT_DETAIL, CS_OPT_ON);
+        throw std::runtime_error("Fail to initialize Capstone's handle");
     }
 }
 

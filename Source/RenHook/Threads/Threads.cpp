@@ -31,8 +31,7 @@ void RenHook::Managers::Threads::Update()
 
     if (Handle == INVALID_HANDLE_VALUE)
     {
-        LOG_ERROR << L"Cannot create snapshot for the threads" << LOG_LINE_SEPARATOR;
-        return;
+        throw std::runtime_error("Cannot create snapshot for the threads");
     }
 
     THREADENTRY32 ThreadEntry;
@@ -40,8 +39,7 @@ void RenHook::Managers::Threads::Update()
 
     if (Thread32First(Handle, &ThreadEntry) == false)
     {
-        LOG_ERROR << L"Cannot retrive information about the first thread" << LOG_LINE_SEPARATOR;
-        return;
+        throw std::runtime_error("Cannot retrive information about the first thread");
     }
 
     do

@@ -41,7 +41,7 @@ RenHook::Hook::Hook(const uintptr_t Address, const uintptr_t Detour)
     }
     else
     {
-        LOG_ERROR << L"Can't create a new hook at address " << std::hex << std::showbase << Address << L"because size is lower than 5, size is " << std::dec << m_size << LOG_LINE_SEPARATOR;
+        throw std::invalid_argument("Size is lower than 5 bytes");
     }
 }
 
@@ -63,10 +63,6 @@ RenHook::Hook::~Hook()
 
         Protection.Restore();
         Threads.Resume();
-
-#ifdef _DEBUG
-        LOG_DEBUG << L"Hook for " << std::hex << std::showbase << m_address << L" was removed" << LOG_LINE_SEPARATOR;
-#endif
     }
 }
 
@@ -301,7 +297,7 @@ const void RenHook::Hook::RelocateRIP(const uintptr_t From, const uintptr_t To) 
                     }
                     default:
                     {
-                        LOG_ERROR << L"Invalid displacement size. Size is " << std::dec << DisplacementSize << L" bytes" << LOG_LINE_SEPARATOR;
+                        throw std::runtime_error("Invalid displacement size");
                         break;
                     }
                 }

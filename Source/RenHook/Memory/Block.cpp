@@ -16,10 +16,6 @@ RenHook::Memory::Block::Block(const uintptr_t Address, size_t Size)
     {
         m_address = Alloc(Address, Size, 0x40000000);
     }
-
-#ifdef _DEBUG
-    LOG_DEBUG << L"Memory block created at " << std::hex << std::showbase << reinterpret_cast<uintptr_t>(m_address) << L", size " << std::dec << Size << L" bytes" << LOG_LINE_SEPARATOR;
-#endif
 }
 
 RenHook::Memory::Block::~Block()
@@ -34,8 +30,7 @@ void RenHook::Memory::Block::CopyFrom(const uintptr_t Address, const size_t Size
 {
     if (Size > m_size)
     {
-        LOG_ERROR << L"Cannot copy memory from " << std::hex << std::showbase << Address << L" because size (" << std::dec << Size << L") is greater than block's size (" << m_size << L")" << LOG_LINE_SEPARATOR;
-        return;
+        throw std::length_error("Invalid size");
     }
 
     std::memcpy(reinterpret_cast<uintptr_t*>(m_address), reinterpret_cast<uintptr_t*>(Address), Size);
@@ -45,8 +40,7 @@ void RenHook::Memory::Block::CopyTo(const uintptr_t Address, const size_t Size)
 {
     if (Size > m_size)
     {
-        LOG_ERROR << L"Cannot copy memory to " << std::hex << std::showbase << Address << L" because size (" << std::dec << Size << L") is greater than block's size (" << m_size << L")" << LOG_LINE_SEPARATOR;
-        return;
+        throw std::length_error("Invalid size");
     }
 
     std::memcpy(reinterpret_cast<uintptr_t*>(Address), reinterpret_cast<uintptr_t*>(m_address), Size);

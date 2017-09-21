@@ -20,7 +20,7 @@ bool RenHook::Memory::Protection::Change(const uint32_t Protection)
 
     if (Result == false)
     {
-        LOG_ERROR << L"Cannot change the protection for address " << std::hex << std::showbase << m_address << L" to " << Protection << L", last error is " << std::dec << std::noshowbase << GetLastError() << LOG_LINE_SEPARATOR;
+        throw std::runtime_error("Cannot change the protection");
     }
 
     return Result;

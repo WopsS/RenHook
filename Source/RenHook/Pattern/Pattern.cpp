@@ -18,16 +18,10 @@ RenHook::Pattern::Pattern(const std::wstring& Pattern)
     // Make sure the pattern is properly aligned.
     if (Pattern.length() % 2 > 0)
     {
-        LOG_ERROR << L"Pattern " << std::quoted(Pattern) << L" is not properly aligned" << LOG_LINE_SEPARATOR;
+        throw std::invalid_argument("Pattern is not properly aligned");
     }
     else
     {
-#ifdef _DEBUG
-        auto StartClock = std::chrono::high_resolution_clock::now();
-
-        LOG_WARNING << L"Be careful, pattern search in debug configuration is slow because \"Optimization\" is disabled and \"Basic Runtime Checks\" is on" << LOG_LINE_SEPARATOR;
-#endif
-
         // Transform the string pattern to bytes and mark which byte should be ignored.
         std::vector<std::pair<uint8_t, bool>> TransformedPattern;
 
@@ -59,13 +53,7 @@ RenHook::Pattern::Pattern(const std::wstring& Pattern)
                 if (++Index == TransformedPattern.size())
                 {
                     // Try to create the hook.
-                    auto Address = reinterpret_cast<uintptr_t>(BaseAddress + i - TransformedPattern.size() + 1);
-
-#ifdef _DEBUG
-                    LOG_DEBUG << L"Pattern " << std::quoted(Pattern) << L" found at " << std::hex << std::showbase << Address << std::dec << L" in " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - StartClock).count() << L" milliseconds" << LOG_LINE_SEPARATOR;
-#endif
-
-                    m_matches.emplace_back(Address);
+                    m_matches.emplace_back(reinterpret_cast<uintptr_t>(BaseAddress + i - TransformedPattern.size() + 1));
                     Index = 0;
                 }
             }
@@ -82,7 +70,7 @@ RenHook::Pattern& RenHook::Pattern::Except(const size_t Excepted)
 {
     if (m_matches.size() != Excepted)
     {
-        LOG_ERROR << L"Pattern excepted " << std::to_wstring(Excepted) << (Excepted == 1 ? L" match" : L" matches") << L", found " << std::to_wstring(m_matches.size());
+        throw std::runtime_error("Pattern excepted " + std::to_string(Excepted) + (Excepted == 1 ? " match" : " matches") + ", found " + std::to_string(m_matches.size()));
     }
 
     return *this;

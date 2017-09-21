@@ -9,7 +9,7 @@ RenHook::Threads::Thread::Thread(const uint32_t Id)
 
     if (m_thread == nullptr)
     {
-        LOG_ERROR << L"Cannot open the thread with id " << Id << LOG_LINE_SEPARATOR;
+        throw std::runtime_error("Cannot open the thread");
     }
 }
 
