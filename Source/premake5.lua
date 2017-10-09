@@ -1,4 +1,5 @@
 project("RenHook")
+    cppdialect("C++17")
     kind("StaticLib")
     language("C++")
     pchheader("RenHook/RenHook.hpp")
@@ -12,6 +13,7 @@ project("RenHook")
         symbols("On")
 
     filter({ "configurations:Release" })
+        optimize("On")
         symbols("Off")
 
     filter({})

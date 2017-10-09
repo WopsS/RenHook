@@ -7,10 +7,7 @@ sourcepath = function() return path.join(basepath, "Source").."/" end
 
 workspace("RenHook")
     architecture("x86_64")
-    characterset("Unicode")
-    configurations({ "Debug", "Release" })
-    cppdialect("C++17")
-    defines({ "_CRT_SECURE_NO_WARNINGS" })
+    configurations({ "Debug", "Release" })    
     location("Projects")
     startproject("RenHook")
 
