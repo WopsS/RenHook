@@ -13,7 +13,7 @@ RenHook::Pattern::Match& RenHook::Pattern::Match::Extract(const size_t Bytes)
     return *this;
 }
 
-RenHook::Pattern::Pattern(const std::wstring& Pattern)
+RenHook::Pattern::Pattern(const std::string& Pattern)
 {
     // Make sure the pattern is properly aligned.
     if (Pattern.length() % 2 > 0)
@@ -27,10 +27,10 @@ RenHook::Pattern::Pattern(const std::wstring& Pattern)
 
         for (size_t i = 0; i < Pattern.length() / 2; i++)
         {
-            std::wstring Byte(Pattern.data() + (i * 2), 2);
+            std::string Byte(Pattern.data() + (i * 2), 2);
 
             // Should it be ignored?
-            if (Byte == L"??")
+            if (Byte == "??")
             {
                 TransformedPattern.emplace_back(0x00, false);
             }

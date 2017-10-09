@@ -71,12 +71,12 @@ std::shared_ptr<RenHook::Hook> RenHook::Hook::Get(const uintptr_t Address)
     return RenHook::Managers::Hooks::Get(Address);
 }
 
-std::shared_ptr<RenHook::Hook> RenHook::Hook::Get(const std::wstring& Key)
+std::shared_ptr<RenHook::Hook> RenHook::Hook::Get(const std::string& Key)
 {
     return RenHook::Managers::Hooks::Get(Key);
 }
 
-std::shared_ptr<RenHook::Hook> RenHook::Hook::Get(const std::wstring& Module, const std::wstring& Function)
+std::shared_ptr<RenHook::Hook> RenHook::Hook::Get(const std::string& Module, const std::string& Function)
 {
     return RenHook::Managers::Hooks::Get(Module, Function);
 }
@@ -86,12 +86,12 @@ void RenHook::Hook::Remove(const uintptr_t Address)
     return RenHook::Managers::Hooks::Remove(Address);
 }
 
-void RenHook::Hook::Remove(const std::wstring& Key)
+void RenHook::Hook::Remove(const std::string& Key)
 {
     return RenHook::Managers::Hooks::Remove(Key);
 }
 
-void RenHook::Hook::Remove(const std::wstring& Module, const std::wstring& Function)
+void RenHook::Hook::Remove(const std::string& Module, const std::string& Function)
 {
     return RenHook::Managers::Hooks::Remove(Module, Function);
 }

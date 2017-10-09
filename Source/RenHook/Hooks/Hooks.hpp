@@ -8,15 +8,15 @@ namespace RenHook::Managers::Hooks
 {
     namespace Private
     {
-        std::shared_ptr<Hook> Create(const uintptr_t Address, const uintptr_t Detour, const std::wstring& Key);
+        std::shared_ptr<Hook> Create(const uintptr_t Address, const uintptr_t Detour, const std::string& Key);
 
         extern uintptr_t ImageBase;
 
-        extern std::map<std::wstring, std::shared_ptr<RenHook::Hook>> Hooks;
+        extern std::map<std::string, std::shared_ptr<RenHook::Hook>> Hooks;
     }
 
     template<typename T>
-    std::shared_ptr<Hook> Create(uintptr_t Address, const T Detour, bool IsInIDARange, std::wstring Key)
+    std::shared_ptr<Hook> Create(uintptr_t Address, const T Detour, bool IsInIDARange, std::string Key)
     {
         if (Key.empty() == true)
         {
@@ -38,11 +38,11 @@ namespace RenHook::Managers::Hooks
     }
 
     template<typename T>
-    std::shared_ptr<Hook> Create(const std::wstring& Module, const std::wstring& Function, const T Detour, std::wstring Key)
+    std::shared_ptr<Hook> Create(const std::string& Module, const std::string& Function, const T Detour, std::string Key)
     {
         if (Key.empty() == true)
         {
-            Key = Module + L"::" + Function;
+            Key = Module + "::" + Function;
         }
 
         // Check if we already have a hooked function with that key.
@@ -51,15 +51,15 @@ namespace RenHook::Managers::Hooks
             return Private::Hooks.at(Key);
         }
 
-        auto Handle = GetModuleHandle(Module.c_str());
+        auto Handle = GetModuleHandleA(Module.c_str());
 
         // If we don't have the module loaded, try to load it.
         if (Handle == nullptr)
         {
-            LoadLibrary(Module.c_str());
+            LoadLibraryA(Module.c_str());
 
             // Try again to get the module's handle.
-            Handle = GetModuleHandle(Module.c_str());
+            Handle = GetModuleHandleA(Module.c_str());
 
             // Is it loaded now?
             if (Handle == nullptr)
@@ -68,7 +68,7 @@ namespace RenHook::Managers::Hooks
             }
         }
 
-        auto Address = GetProcAddress(Handle, std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(Function).c_str());
+        auto Address = GetProcAddress(Handle, Function.c_str());
 
         // Do we have an invalid address?
         if (Address == nullptr)
@@ -80,7 +80,7 @@ namespace RenHook::Managers::Hooks
     }
 
     template<typename T>
-    std::shared_ptr<Hook> Create(std::wstring Pattern, const T Detour, std::wstring Key)
+    std::shared_ptr<Hook> Create(std::string Pattern, const T Detour, std::string Key)
     {
         if (Key.empty() == true)
         {
@@ -114,15 +114,15 @@ namespace RenHook::Managers::Hooks
 
     std::shared_ptr<Hook> Get(const uintptr_t Address);
 
-    std::shared_ptr<Hook> Get(const std::wstring& Key);
+    std::shared_ptr<Hook> Get(const std::string& Key);
 
-    std::shared_ptr<Hook> Get(const std::wstring& Module, const std::wstring& Function);
+    std::shared_ptr<Hook> Get(const std::string& Module, const std::string& Function);
 
     void Remove(const uintptr_t Address);
 
-    void Remove(const std::wstring& Key);
+    void Remove(const std::string& Key);
 
-    void Remove(const std::wstring& Module, const std::wstring& Function);
+    void Remove(const std::string& Module, const std::string& Function);
 
     void RemoveAll();
 }

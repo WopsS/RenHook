@@ -37,7 +37,7 @@ namespace RenHook
             uintptr_t m_address;
         };
 
-        Pattern(const std::wstring& Pattern);
+        Pattern(const std::string& Pattern);
         ~Pattern() = default;
 
         Pattern& Except(const size_t Excepted);

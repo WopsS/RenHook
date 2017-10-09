@@ -2,9 +2,9 @@
 #include <RenHook/Hooks/Hooks.hpp>
 
 uintptr_t RenHook::Managers::Hooks::Private::ImageBase = 0;
-std::map<std::wstring, std::shared_ptr<RenHook::Hook>> RenHook::Managers::Hooks::Private::Hooks;
+std::map<std::string, std::shared_ptr<RenHook::Hook>> RenHook::Managers::Hooks::Private::Hooks;
 
-std::shared_ptr<RenHook::Hook> RenHook::Managers::Hooks::Private::Create(const uintptr_t Address, const uintptr_t Detour, const std::wstring& Key)
+std::shared_ptr<RenHook::Hook> RenHook::Managers::Hooks::Private::Create(const uintptr_t Address, const uintptr_t Detour, const std::string& Key)
 {
     auto Result = std::make_shared<Hook>(Address, Detour);
     Hooks.emplace(Key, Result);
@@ -14,7 +14,7 @@ std::shared_ptr<RenHook::Hook> RenHook::Managers::Hooks::Private::Create(const u
 
 std::shared_ptr<RenHook::Hook> RenHook::Managers::Hooks::Get(const uintptr_t Address)
 {
-    auto Key = std::to_wstring(Address);
+    auto Key = std::to_string(Address);
 
     if (Private::Hooks.find(Key) != Private::Hooks.end())
     {
@@ -24,7 +24,7 @@ std::shared_ptr<RenHook::Hook> RenHook::Managers::Hooks::Get(const uintptr_t Add
     return nullptr;
 }
 
-std::shared_ptr<RenHook::Hook> RenHook::Managers::Hooks::Get(const std::wstring& Key)
+std::shared_ptr<RenHook::Hook> RenHook::Managers::Hooks::Get(const std::string& Key)
 {
     if (Private::Hooks.find(Key) != Private::Hooks.end())
     {
@@ -34,9 +34,9 @@ std::shared_ptr<RenHook::Hook> RenHook::Managers::Hooks::Get(const std::wstring&
     return nullptr;
 }
 
-std::shared_ptr<RenHook::Hook> RenHook::Managers::Hooks::Get(const std::wstring& Module, const std::wstring& Function)
+std::shared_ptr<RenHook::Hook> RenHook::Managers::Hooks::Get(const std::string& Module, const std::string& Function)
 {
-    auto Key = Module + L"::" + Function;
+    auto Key = Module + "::" + Function;
 
     if (Private::Hooks.find(Key) != Private::Hooks.end())
     {
@@ -48,17 +48,17 @@ std::shared_ptr<RenHook::Hook> RenHook::Managers::Hooks::Get(const std::wstring&
 
 void RenHook::Managers::Hooks::Remove(const uintptr_t Address)
 {
-    Private::Hooks.erase(std::to_wstring(Address));
+    Private::Hooks.erase(std::to_string(Address));
 }
 
-void RenHook::Managers::Hooks::Remove(const std::wstring& Key)
+void RenHook::Managers::Hooks::Remove(const std::string& Key)
 {
     Private::Hooks.erase(Key);
 }
 
-void RenHook::Managers::Hooks::Remove(const std::wstring& Module, const std::wstring& Function)
+void RenHook::Managers::Hooks::Remove(const std::string& Module, const std::string& Function)
 {
-    Private::Hooks.erase(Module + L"::" + Function);
+    Private::Hooks.erase(Module + "::" + Function);
 }
 
 void RenHook::Managers::Hooks::RemoveAll()

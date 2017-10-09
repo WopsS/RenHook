@@ -13,34 +13,34 @@ namespace RenHook
         ~Hook();
 
         template<typename T>
-        static std::shared_ptr<Hook> Create(const uintptr_t Address, const T Detour, const bool IsInIDARange = false, const std::wstring& Key = L"")
+        static std::shared_ptr<Hook> Create(const uintptr_t Address, const T Detour, const bool IsInIDARange = false, const std::string& Key = "")
         {
             return RenHook::Managers::Hooks::Create(Address, Detour, IsInIDARange, Key);
         }
 
         template<typename T>
-        static std::shared_ptr<Hook> Create(const std::wstring& Module, const std::wstring& Function, const T Detour, const std::wstring& Key = L"")
+        static std::shared_ptr<Hook> Create(const std::string& Module, const std::string& Function, const T Detour, const std::string& Key = "")
         {
             return RenHook::Managers::Hooks::Create(Module, Function, Detour, Key);
         }
 
         template<typename T>
-        static std::shared_ptr<Hook> Create(std::wstring Pattern, const T Detour, const std::wstring& Key = L"")
+        static std::shared_ptr<Hook> Create(std::string Pattern, const T Detour, const std::string& Key = L"")
         {
             return RenHook::Managers::Hooks::Create(Pattern, Detour, Key);
         }
 
         static std::shared_ptr<Hook> Get(const uintptr_t Address);
 
-        static std::shared_ptr<Hook> Get(const std::wstring& Key);
+        static std::shared_ptr<Hook> Get(const std::string& Key);
 
-        static std::shared_ptr<Hook> Get(const std::wstring& Module, const std::wstring& Function);
+        static std::shared_ptr<Hook> Get(const std::string& Module, const std::string& Function);
 
         static void Remove(const uintptr_t Address);
 
-        static void Remove(const std::wstring& Key);
+        static void Remove(const std::string& Key);
 
-        static void Remove(const std::wstring& Module, const std::wstring& Function);
+        static void Remove(const std::string& Module, const std::string& Function);
 
         static void RemoveAll();
 
