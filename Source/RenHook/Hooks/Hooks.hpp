@@ -20,7 +20,7 @@ namespace RenHook::Managers::Hooks
     {
         if (Key.empty() == true)
         {
-            Key = std::to_wstring(Address);
+            Key = std::to_string(Address);
         }
 
         // Check if we already have a hooked function with that key.
