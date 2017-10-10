@@ -295,6 +295,11 @@ const void RenHook::Hook::RelocateRIP(const uintptr_t From, const uintptr_t To) 
                         *reinterpret_cast<int32_t*>(InstructionAddress + UsedBytes) = CalculateDisplacement<int32_t>(InstructionAddress, DisplacementAddress, UsedBytes + sizeof(int32_t));
                         break;
                     }
+                    case 8:
+                    {
+                        *reinterpret_cast<int64_t*>(InstructionAddress + UsedBytes) = CalculateDisplacement<int64_t>(InstructionAddress, DisplacementAddress, UsedBytes + sizeof(int64_t));
+                        break;
+                    }
                     default:
                     {
                         throw std::runtime_error("Invalid displacement size");
