@@ -80,21 +80,14 @@ namespace RenHook::Managers::Hooks
     }
 
     template<typename T>
-    std::shared_ptr<Hook> Create(std::string Pattern, const T Detour, std::string Key)
+    std::shared_ptr<Hook> Create(const std::string& Pattern, const T Detour, std::string Key)
     {
         if (Key.empty() == true)
         {
             Key = Pattern;
         }
 
-        // Remove whitespaces between bytes.
-        Pattern.erase(std::remove_if(Pattern.begin(), Pattern.end(), ::isspace), Pattern.end());
-
-        // Make sure the pattern is properly aligned.
-        if (Pattern.length() % 2 > 0)
-        {
-            throw std::invalid_argument("Pattern is not properly aligned");
-        }
+        auto pattern = RenHook::Pattern(Pattern);
 
         // Check if we already have a hooked function with that pattern.
         if (Private::Hooks.find(Key) != Private::Hooks.end())
@@ -102,7 +95,7 @@ namespace RenHook::Managers::Hooks
             return Private::Hooks.at(Key);
         }
 
-        auto Address = RenHook::Pattern(Pattern).Expect(1).Get(1).To<uintptr_t>();
+        auto Address = pattern.Expect(1).Get(1).To<uintptr_t>();
 
         if (Address == 0)
         {

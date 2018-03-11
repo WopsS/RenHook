@@ -13,8 +13,11 @@ RenHook::Pattern::Match& RenHook::Pattern::Match::Extract(const size_t Bytes)
     return *this;
 }
 
-RenHook::Pattern::Pattern(const std::string& Pattern)
+RenHook::Pattern::Pattern(std::string Pattern)
 {
+    // Remove whitespaces between bytes.
+    Pattern.erase(std::remove_if(Pattern.begin(), Pattern.end(), ::isspace), Pattern.end());
+
     // Make sure the pattern is properly aligned.
     if (Pattern.length() % 2 > 0)
     {

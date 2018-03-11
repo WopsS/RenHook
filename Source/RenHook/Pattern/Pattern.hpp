@@ -37,7 +37,7 @@ namespace RenHook
             uintptr_t m_address;
         };
 
-        Pattern(const std::string& Pattern);
+        Pattern(std::string Pattern);
         ~Pattern() = default;
 
         Pattern& Expect(const size_t Expected);
