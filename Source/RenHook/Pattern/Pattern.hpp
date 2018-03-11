@@ -40,7 +40,7 @@ namespace RenHook
         Pattern(const std::string& Pattern);
         ~Pattern() = default;
 
-        Pattern& Except(const size_t Excepted);
+        Pattern& Expect(const size_t Expected);
 
         Match& Get(const size_t Index);
 

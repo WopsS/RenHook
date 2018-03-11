@@ -66,11 +66,11 @@ RenHook::Pattern::Pattern(const std::string& Pattern)
     }
 }
 
-RenHook::Pattern& RenHook::Pattern::Except(const size_t Excepted)
+RenHook::Pattern& RenHook::Pattern::Expect(const size_t Expected)
 {
-    if (m_matches.size() != Excepted)
+    if (m_matches.size() != Expected)
     {
-        throw std::runtime_error("Pattern excepted " + std::to_string(Excepted) + (Excepted == 1 ? " match" : " matches") + ", found " + std::to_string(m_matches.size()));
+        throw std::runtime_error("Pattern expected " + std::to_string(Expected) + (Expected == 1 ? " match" : " matches") + ", found " + std::to_string(m_matches.size()));
     }
 
     return *this;
