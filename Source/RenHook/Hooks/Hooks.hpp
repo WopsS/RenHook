@@ -102,7 +102,7 @@ namespace RenHook::Managers::Hooks
             return Private::Hooks.at(Key);
         }
 
-        auto Address = RenHook::Pattern(Pattern).Except(1).Get(1).To<uintptr_t>();
+        auto Address = RenHook::Pattern(Pattern).Expect(1).Get(1).To<uintptr_t>();
 
         if (Address == 0)
         {
