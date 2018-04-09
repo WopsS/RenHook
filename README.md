@@ -50,7 +50,7 @@ MessageBoxWFunction(HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType)
     auto Hook = RenHook::Hook::Get(L"user32", L"MessageBoxW");
 
     using MessageBoxW_t = int(*)(HWND hWnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType);
-    return Hook->Call<int, MessageBoxW_t>(hWnd, L"Hello from the hook!", L"Hooked MessageBoxW", MB_OK);
+    return Hook->Call<MessageBoxW_t>(hWnd, L"Hello from the hook!", L"Hooked MessageBoxW", MB_OK);
 }
 
 int main()

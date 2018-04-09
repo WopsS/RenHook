@@ -46,10 +46,10 @@ namespace RenHook
 
         static void SetImageBase(const uintptr_t Value);
 
-        template<typename Result, typename CallType, typename... Args>
-        Result Call(Args&& ...args)
+        template<typename T, typename... Args>
+        auto Call(Args&& ...args)
         {
-            return GetOriginal<CallType>()(std::forward<Args>(args)...);
+            return GetOriginal<T>()(std::forward<Args>(args)...);
         }
 
         template<typename T>
