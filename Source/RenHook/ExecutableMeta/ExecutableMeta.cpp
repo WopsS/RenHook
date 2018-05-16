@@ -5,7 +5,7 @@ uintptr_t BaseAddress = 0;
 
 uintptr_t EndAddress = 0;
 
-const uintptr_t RenHook::ExecutableMeta::GetBaseAddress()
+uintptr_t RenHook::ExecutableMeta::GetBaseAddress()
 {
     if (BaseAddress == 0)
     {
@@ -18,7 +18,7 @@ const uintptr_t RenHook::ExecutableMeta::GetBaseAddress()
     return BaseAddress;
 }
 
-const uintptr_t RenHook::ExecutableMeta::GetEndAddress()
+uintptr_t RenHook::ExecutableMeta::GetEndAddress()
 {
     if (EndAddress == 0)
     {

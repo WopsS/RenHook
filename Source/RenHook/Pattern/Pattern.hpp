@@ -10,19 +10,19 @@ namespace RenHook
         {
         public:
 
-            Match(const uintptr_t aAddress);
+            Match(uintptr_t aAddress);
             ~Match() = default;
 
-            Match& Extract(const size_t aBytes);
+            Match& Extract(size_t aBytes);
 
             template<typename T>
             T To()
             {
-                if constexpr (std::is_same_v<uintptr_t, T> == true)
+                if constexpr (std::is_same_v<uintptr_t, T>)
                 {
                     return m_address;
                 }
-                else if constexpr (std::is_integral_v<T> == true)
+                else if constexpr (std::is_integral_v<T>)
                 {
                     return static_cast<T>(m_address);
                 }
@@ -40,9 +40,9 @@ namespace RenHook
         Pattern(std::string aPattern);
         ~Pattern() = default;
 
-        Pattern& Expect(const size_t aExpected);
+        Pattern& Expect(size_t aExpected);
 
-        Match& Get(const size_t aIndex);
+        Match& Get(size_t aIndex);
 
     private:
 

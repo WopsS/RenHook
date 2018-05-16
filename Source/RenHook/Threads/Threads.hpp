@@ -20,6 +20,5 @@ namespace RenHook::Managers
         void Update();
 
         std::vector<RenHook::Threads::Thread> m_threads;
-
     };
 }

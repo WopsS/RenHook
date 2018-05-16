@@ -4,7 +4,7 @@
 uintptr_t RenHook::Managers::Hooks::Private::ImageBase = 0;
 std::map<std::string, std::shared_ptr<RenHook::Hook>> RenHook::Managers::Hooks::Private::Hooks;
 
-std::shared_ptr<RenHook::Hook> RenHook::Managers::Hooks::Private::Create(const uintptr_t aAddress, const uintptr_t aDetour, const std::string& aKey)
+std::shared_ptr<RenHook::Hook> RenHook::Managers::Hooks::Private::Create(uintptr_t aAddress, uintptr_t aDetour, const std::string& aKey)
 {
     auto result = std::make_shared<Hook>(aAddress, aDetour);
     Hooks.emplace(aKey, result);
@@ -12,7 +12,7 @@ std::shared_ptr<RenHook::Hook> RenHook::Managers::Hooks::Private::Create(const u
     return result;
 }
 
-std::shared_ptr<RenHook::Hook> RenHook::Managers::Hooks::Get(const uintptr_t aAddress)
+std::shared_ptr<RenHook::Hook> RenHook::Managers::Hooks::Get(uintptr_t aAddress)
 {
     auto key = std::to_string(aAddress);
 
@@ -46,7 +46,7 @@ std::shared_ptr<RenHook::Hook> RenHook::Managers::Hooks::Get(const std::string& 
     return nullptr;
 }
 
-void RenHook::Managers::Hooks::Remove(const uintptr_t aAddress)
+void RenHook::Managers::Hooks::Remove(uintptr_t aAddress)
 {
     Private::Hooks.erase(std::to_string(aAddress));
 }

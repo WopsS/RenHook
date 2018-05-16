@@ -22,7 +22,7 @@ void RenHook::Managers::Threads::Suspend()
 void RenHook::Managers::Threads::Update()
 {
     // If we have any thread in the list, clear it.
-    if (m_threads.empty() == false)
+    if (!m_threads.empty())
     {
         m_threads.clear();
     }
@@ -37,7 +37,7 @@ void RenHook::Managers::Threads::Update()
     THREADENTRY32 threadEntry;
     threadEntry.dwSize = sizeof(threadEntry);
 
-    if (Thread32First(handle, &threadEntry) == false)
+    if (!Thread32First(handle, &threadEntry))
     {
         throw std::runtime_error("Cannot retrive information about the first thread");
     }

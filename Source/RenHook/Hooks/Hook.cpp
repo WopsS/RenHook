@@ -3,7 +3,7 @@
 #include <RenHook/Memory/Protection.hpp>
 #include <RenHook/Threads/Threads.hpp>
 
-RenHook::Hook::Hook(const uintptr_t aAddress, const uintptr_t aDetour)
+RenHook::Hook::Hook(uintptr_t aAddress, uintptr_t aDetour)
     : m_address(aAddress)
     , m_size(GetMinimumSize(aAddress))
     , m_memoryBlock(nullptr)
@@ -66,7 +66,7 @@ RenHook::Hook::~Hook()
     }
 }
 
-std::shared_ptr<RenHook::Hook> RenHook::Hook::Get(const uintptr_t aAddress)
+std::shared_ptr<RenHook::Hook> RenHook::Hook::Get(uintptr_t aAddress)
 {
     return RenHook::Managers::Hooks::Get(aAddress);
 }
@@ -81,7 +81,7 @@ std::shared_ptr<RenHook::Hook> RenHook::Hook::Get(const std::string& aModule, co
     return RenHook::Managers::Hooks::Get(aModule, aFunction);
 }
 
-void RenHook::Hook::Remove(const uintptr_t aAddress)
+void RenHook::Hook::Remove(uintptr_t aAddress)
 {
     return RenHook::Managers::Hooks::Remove(aAddress);
 }
@@ -101,7 +101,7 @@ void RenHook::Hook::RemoveAll()
     RenHook::Managers::Hooks::RemoveAll();
 }
 
-void RenHook::Hook::SetImageBase(const uintptr_t aValue)
+void RenHook::Hook::SetImageBase(uintptr_t aValue)
 {
     RenHook::Managers::Hooks::Private::ImageBase = aValue;
 }
@@ -111,7 +111,7 @@ const bool RenHook::Hook::IsValid() const
     return m_size >= 5 && m_memoryBlock != nullptr && m_memoryBlock->GetAddress() > 0;
 }
 
-const size_t RenHook::Hook::CheckSize(const RenHook::Capstone& aCapstone, const size_t aMinimumSize) const
+size_t RenHook::Hook::CheckSize(const RenHook::Capstone& aCapstone, size_t aMinimumSize) const
 {
     size_t size = 0;
 
@@ -128,7 +128,7 @@ const size_t RenHook::Hook::CheckSize(const RenHook::Capstone& aCapstone, const 
     return 0;
 }
 
-const size_t RenHook::Hook::CountConditionalJumps(const uintptr_t aAddress) const
+size_t RenHook::Hook::CountConditionalJumps(uintptr_t aAddress) const
 {
     size_t result = 0;
 
@@ -145,7 +145,7 @@ const size_t RenHook::Hook::CountConditionalJumps(const uintptr_t aAddress) cons
         {
             auto& operand = structure.operands[j];
 
-            if (operand.type == X86_OP_IMM && IsConditionalJump(instruction->bytes, instruction->size) == true)
+            if (operand.type == X86_OP_IMM && IsConditionalJump(instruction->bytes, instruction->size))
             {
                 result++;
             }
@@ -155,7 +155,7 @@ const size_t RenHook::Hook::CountConditionalJumps(const uintptr_t aAddress) cons
     return result;
 }
 
-const size_t RenHook::Hook::GetMinimumSize(const uintptr_t aAddress) const
+size_t RenHook::Hook::GetMinimumSize(uintptr_t aAddress) const
 {
     size_t size = 0;
 
@@ -180,7 +180,7 @@ const size_t RenHook::Hook::GetMinimumSize(const uintptr_t aAddress) const
     return size;
 }
 
-const bool RenHook::Hook::IsConditionalJump(const uint8_t* aBytes, const size_t aSize) const
+bool RenHook::Hook::IsConditionalJump(const uint8_t* aBytes, size_t aSize) const
 {
     if (aSize > 0)
     {
@@ -204,7 +204,7 @@ const bool RenHook::Hook::IsConditionalJump(const uint8_t* aBytes, const size_t 
     return false;
 }
 
-const void RenHook::Hook::RelocateRIP(const uintptr_t aFrom, const uintptr_t aTo) const
+void RenHook::Hook::RelocateRIP(uintptr_t aFrom, uintptr_t aTo) const
 {
     RenHook::Capstone capstone;
 
@@ -267,7 +267,7 @@ const void RenHook::Hook::RelocateRIP(const uintptr_t aFrom, const uintptr_t aTo
                 auto displacementSize = instruction->size - usedBytes;
                 auto instructionAddress = aTo + instruction->address - aFrom;
 
-                if (IsConditionalJump(instruction->bytes, instruction->size) == true)
+                if (IsConditionalJump(instruction->bytes, instruction->size))
                 {
                     conditionalJumps++;
 
@@ -311,7 +311,7 @@ const void RenHook::Hook::RelocateRIP(const uintptr_t aFrom, const uintptr_t aTo
     }
 }
 
-const size_t RenHook::Hook::WriteJump(const uintptr_t aFrom, const uintptr_t aTo, const size_t aSize) const
+size_t RenHook::Hook::WriteJump(uintptr_t aFrom, uintptr_t aTo, size_t aSize) const
 {
     std::vector<uint8_t> bytes;
 

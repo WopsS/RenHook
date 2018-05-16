@@ -2,12 +2,12 @@
 #include <RenHook/Pattern/Pattern.hpp>
 #include <RenHook/ExecutableMeta/ExecutableMeta.hpp>
 
-RenHook::Pattern::Match::Match(const uintptr_t aAddress)
+RenHook::Pattern::Match::Match(uintptr_t aAddress)
     : m_address(aAddress)
 {
 }
 
-RenHook::Pattern::Match& RenHook::Pattern::Match::Extract(const size_t aBytes)
+RenHook::Pattern::Match& RenHook::Pattern::Match::Extract(size_t aBytes)
 {
     m_address = reinterpret_cast<uintptr_t>(reinterpret_cast<char*>(m_address) + aBytes);
     return *this;
@@ -50,7 +50,7 @@ RenHook::Pattern::Pattern(std::string aPattern)
         for (size_t i = 0, index = 0; i < memorySize; i++)
         {
             // Check if the current byte should be ignored or if both bytes match.
-            if (transformedPattern.at(index).second == false || baseAddress[i] == transformedPattern.at(index).first)
+            if (!transformedPattern.at(index).second || baseAddress[i] == transformedPattern.at(index).first)
             {
                 // If the index match the pattern size, we found it.
                 if (++index == transformedPattern.size())
@@ -69,7 +69,7 @@ RenHook::Pattern::Pattern(std::string aPattern)
     }
 }
 
-RenHook::Pattern& RenHook::Pattern::Expect(const size_t aExpected)
+RenHook::Pattern& RenHook::Pattern::Expect(size_t aExpected)
 {
     if (m_matches.size() != aExpected)
     {
@@ -79,7 +79,7 @@ RenHook::Pattern& RenHook::Pattern::Expect(const size_t aExpected)
     return *this;
 }
 
-RenHook::Pattern::Match& RenHook::Pattern::Get(const size_t aIndex)
+RenHook::Pattern::Match& RenHook::Pattern::Get(size_t aIndex)
 {
     if (aIndex == 0)
     {

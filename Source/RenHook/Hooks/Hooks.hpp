@@ -8,7 +8,7 @@ namespace RenHook::Managers::Hooks
 {
     namespace Private
     {
-        std::shared_ptr<Hook> Create(const uintptr_t aAddress, const uintptr_t aDetour, const std::string& aKey);
+        std::shared_ptr<Hook> Create(uintptr_t aAddress, uintptr_t aDetour, const std::string& aKey);
 
         extern uintptr_t ImageBase;
 
@@ -16,9 +16,9 @@ namespace RenHook::Managers::Hooks
     }
 
     template<typename T>
-    std::shared_ptr<Hook> Create(uintptr_t aAddress, const T aDetour, bool aIsInIDARange, std::string aKey)
+    std::shared_ptr<Hook> Create(uintptr_t aAddress, T aDetour, bool aIsInIDARange, std::string aKey)
     {
-        if (aKey.empty() == true)
+        if (aKey.empty())
         {
             aKey = std::to_string(aAddress);
         }
@@ -29,7 +29,7 @@ namespace RenHook::Managers::Hooks
             return Private::Hooks.at(aKey);
         }
         
-        if (aIsInIDARange == true)
+        if (aIsInIDARange)
         {
             aAddress = aAddress - Private::ImageBase + RenHook::ExecutableMeta::GetBaseAddress();
         }
@@ -38,9 +38,9 @@ namespace RenHook::Managers::Hooks
     }
 
     template<typename T>
-    std::shared_ptr<Hook> Create(const std::string& aModule, const std::string& aFunction, const T aDetour, std::string aKey)
+    std::shared_ptr<Hook> Create(const std::string& aModule, const std::string& aFunction, T aDetour, std::string aKey)
     {
-        if (aKey.empty() == true)
+        if (aKey.empty())
         {
             aKey = aModule + "::" + aFunction;
         }
@@ -54,7 +54,7 @@ namespace RenHook::Managers::Hooks
         auto handle = GetModuleHandleA(aModule.c_str());
 
         // If we don't have the module loaded, try to load it.
-        if (handle == nullptr)
+        if (!handle)
         {
             LoadLibraryA(aModule.c_str());
 
@@ -62,7 +62,7 @@ namespace RenHook::Managers::Hooks
             handle = GetModuleHandleA(aModule.c_str());
 
             // Is it loaded now?
-            if (handle == nullptr)
+            if (!handle)
             {
                 throw std::invalid_argument("Module not found");
             }
@@ -71,7 +71,7 @@ namespace RenHook::Managers::Hooks
         auto address = GetProcAddress(handle, aFunction.c_str());
 
         // Do we have an invalid address?
-        if (address == nullptr)
+        if (!address)
         {
             throw std::invalid_argument("Function not found in module");
         }
@@ -80,9 +80,9 @@ namespace RenHook::Managers::Hooks
     }
 
     template<typename T>
-    std::shared_ptr<Hook> Create(const std::string& aPattern, const T aDetour, std::string aKey)
+    std::shared_ptr<Hook> Create(const std::string& aPattern, T aDetour, std::string aKey)
     {
-        if (aKey.empty() == true)
+        if (aKey.empty())
         {
             aKey = aPattern;
         }
@@ -105,13 +105,13 @@ namespace RenHook::Managers::Hooks
         return Private::Create(address, reinterpret_cast<uintptr_t>(aDetour), aKey);
     }
 
-    std::shared_ptr<Hook> Get(const uintptr_t aAddress);
+    std::shared_ptr<Hook> Get(uintptr_t aAddress);
 
     std::shared_ptr<Hook> Get(const std::string& aKey);
 
     std::shared_ptr<Hook> Get(const std::string& aModule, const std::string& aFunction);
 
-    void Remove(const uintptr_t aAddress);
+    void Remove(uintptr_t aAddress);
 
     void Remove(const std::string& aKey);
 

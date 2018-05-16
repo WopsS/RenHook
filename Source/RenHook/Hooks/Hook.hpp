@@ -9,34 +9,34 @@ namespace RenHook
     {
     public:
 
-        Hook(const uintptr_t aAddress, const uintptr_t aDetour);
+        Hook(uintptr_t aAddress, uintptr_t aDetour);
         ~Hook();
 
         template<typename T>
-        static std::shared_ptr<Hook> Create(const uintptr_t aAddress, const T aDetour, const bool aIsInIDARange = false, const std::string& aKey = "")
+        static std::shared_ptr<Hook> Create(uintptr_t aAddress, T aDetour, bool aIsInIDARange = false, const std::string& aKey = "")
         {
             return RenHook::Managers::Hooks::Create(aAddress, aDetour, aIsInIDARange, aKey);
         }
 
         template<typename T>
-        static std::shared_ptr<Hook> Create(const std::string& aModule, const std::string& aFunction, const T aDetour, const std::string& aKey = "")
+        static std::shared_ptr<Hook> Create(const std::string& aModule, const std::string& aFunction, T aDetour, const std::string& aKey = "")
         {
             return RenHook::Managers::Hooks::Create(aModule, aFunction, aDetour, aKey);
         }
 
         template<typename T>
-        static std::shared_ptr<Hook> Create(std::string aPattern, const T aDetour, const std::string& aKey = L"")
+        static std::shared_ptr<Hook> Create(std::string aPattern, T aDetour, const std::string& aKey = L"")
         {
             return RenHook::Managers::Hooks::Create(aPattern, aDetour, aKey);
         }
 
-        static std::shared_ptr<Hook> Get(const uintptr_t aAddress);
+        static std::shared_ptr<Hook> Get(uintptr_t aAddress);
 
         static std::shared_ptr<Hook> Get(const std::string& aKey);
 
         static std::shared_ptr<Hook> Get(const std::string& aModule, const std::string& aFunction);
 
-        static void Remove(const uintptr_t aAddress);
+        static void Remove(uintptr_t aAddress);
 
         static void Remove(const std::string& aKey);
 
@@ -44,7 +44,7 @@ namespace RenHook
 
         static void RemoveAll();
 
-        static void SetImageBase(const uintptr_t aValue);
+        static void SetImageBase(uintptr_t aValue);
 
         template<typename T, typename... Args>
         auto Call(Args&& ...aArgs)
@@ -63,7 +63,7 @@ namespace RenHook
     private:
 
         template<typename T>
-        const T CalculateDisplacement(const uintptr_t aFrom, const uintptr_t aTo, const size_t aSize) const
+        const T CalculateDisplacement(uintptr_t aFrom, uintptr_t aTo, size_t aSize) const
         {
             if (aTo < aFrom)
             {
@@ -73,17 +73,17 @@ namespace RenHook
             return static_cast<T>(aTo - (aFrom + aSize));
         }
 
-        const size_t CheckSize(const RenHook::Capstone& aCapstone, const size_t aMinimumSize) const;
+        size_t CheckSize(const RenHook::Capstone& aCapstone, size_t aMinimumSize) const;
 
-        const size_t CountConditionalJumps(const uintptr_t aAddress) const;
+        size_t CountConditionalJumps(uintptr_t aAddress) const;
 
-        const size_t GetMinimumSize(const uintptr_t aAddress) const;
+        size_t GetMinimumSize(uintptr_t aAddress) const;
 
-        const bool IsConditionalJump(const uint8_t* aBytes, const size_t aSize) const;
+        bool IsConditionalJump(const uint8_t* aBytes, size_t aSize) const;
 
-        const void RelocateRIP(const uintptr_t aFrom, const uintptr_t aTo) const;
+        void RelocateRIP(uintptr_t aFrom, uintptr_t aTo) const;
 
-        const size_t WriteJump(const uintptr_t aFrom, const uintptr_t aTo, const size_t aSize) const;
+        size_t WriteJump(uintptr_t aFrom, uintptr_t aTo, size_t aSize) const;
 
         uintptr_t m_address;
 

@@ -6,10 +6,10 @@ namespace RenHook::Memory
     {
     public:
 
-        Protection(const uintptr_t aAddress, const size_t aSize);
+        Protection(uintptr_t aAddress, size_t aSize);
         ~Protection();
 
-        bool Change(const uint32_t aProtection);
+        bool Change(uint32_t aProtection);
 
         bool Restore();
 
