@@ -3,9 +3,9 @@
 
 void RenHook::Managers::Threads::Resume()
 {
-    for (auto& Thread : m_threads)
+    for (auto& thread : m_threads)
     {
-        Thread.Resume();
+        thread.Resume();
     }
 }
 
@@ -13,9 +13,9 @@ void RenHook::Managers::Threads::Suspend()
 {
     Update();
 
-    for (auto& Thread : m_threads)
+    for (auto& thread : m_threads)
     {
-        Thread.Suspend();
+        thread.Suspend();
     }
 }
 
@@ -27,28 +27,28 @@ void RenHook::Managers::Threads::Update()
         m_threads.clear();
     }
 
-    auto Handle = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+    auto handle = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
 
-    if (Handle == INVALID_HANDLE_VALUE)
+    if (handle == INVALID_HANDLE_VALUE)
     {
         throw std::runtime_error("Cannot create snapshot for the threads");
     }
 
-    THREADENTRY32 ThreadEntry;
-    ThreadEntry.dwSize = sizeof(ThreadEntry);
+    THREADENTRY32 threadEntry;
+    threadEntry.dwSize = sizeof(threadEntry);
 
-    if (Thread32First(Handle, &ThreadEntry) == false)
+    if (Thread32First(handle, &threadEntry) == false)
     {
         throw std::runtime_error("Cannot retrive information about the first thread");
     }
 
     do
     {
-        if (ThreadEntry.dwSize >= RTL_SIZEOF_THROUGH_FIELD(THREADENTRY32, th32OwnerProcessID) && ThreadEntry.th32ThreadID != GetCurrentThreadId() && ThreadEntry.th32OwnerProcessID == GetCurrentProcessId())
+        if (threadEntry.dwSize >= RTL_SIZEOF_THROUGH_FIELD(THREADENTRY32, th32OwnerProcessID) && threadEntry.th32ThreadID != GetCurrentThreadId() && threadEntry.th32OwnerProcessID == GetCurrentProcessId())
         {
-            m_threads.emplace_back(ThreadEntry.th32ThreadID);
+            m_threads.emplace_back(threadEntry.th32ThreadID);
         }
-    } while (Thread32Next(Handle, &ThreadEntry));
+    } while (Thread32Next(handle, &threadEntry));
 
-    CloseHandle(Handle);
+    CloseHandle(handle);
 }

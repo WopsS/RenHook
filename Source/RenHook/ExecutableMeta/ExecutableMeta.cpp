@@ -11,8 +11,8 @@ const uintptr_t RenHook::ExecutableMeta::GetBaseAddress()
     {
         BaseAddress = reinterpret_cast<uintptr_t>(GetModuleHandle(nullptr));
 
-        auto NTHeaders = reinterpret_cast<PIMAGE_NT_HEADERS>(BaseAddress + static_cast<uintptr_t>(reinterpret_cast<PIMAGE_DOS_HEADER>(BaseAddress)->e_lfanew));
-        EndAddress = BaseAddress + NTHeaders->OptionalHeader.SizeOfImage;
+        auto ntHeaders = reinterpret_cast<PIMAGE_NT_HEADERS>(BaseAddress + static_cast<uintptr_t>(reinterpret_cast<PIMAGE_DOS_HEADER>(BaseAddress)->e_lfanew));
+        EndAddress = BaseAddress + ntHeaders->OptionalHeader.SizeOfImage;
     }
 
     return BaseAddress;

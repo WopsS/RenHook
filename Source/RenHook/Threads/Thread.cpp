@@ -1,11 +1,11 @@
 #include <RenHook/RenHook.hpp>
 #include <RenHook/Threads/Thread.hpp>
 
-RenHook::Threads::Thread::Thread(const uint32_t Id) 
+RenHook::Threads::Thread::Thread(const uint32_t aId) 
     : m_thread(nullptr)
     , m_suspended(false)
 {
-    m_thread = OpenThread(THREAD_SUSPEND_RESUME, false, Id);
+    m_thread = OpenThread(THREAD_SUSPEND_RESUME, false, aId);
 
     if (m_thread == nullptr)
     {

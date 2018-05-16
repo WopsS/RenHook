@@ -1,9 +1,9 @@
 #include <RenHook/RenHook.hpp>
 #include <RenHook/Memory/Protection.hpp>
 
-RenHook::Memory::Protection::Protection(const uintptr_t Address, const size_t Size)
-    : m_address(Address)
-    , m_size(Size)
+RenHook::Memory::Protection::Protection(const uintptr_t aAddress, const size_t aSize)
+    : m_address(aAddress)
+    , m_size(aSize)
     , m_originalProtection(0)
 {
 }
@@ -13,17 +13,17 @@ RenHook::Memory::Protection::~Protection()
     Restore();
 }
 
-bool RenHook::Memory::Protection::Change(const uint32_t Protection)
+bool RenHook::Memory::Protection::Change(const uint32_t aProtection)
 {
-    uint32_t OldProtection = 0;
-    auto Result = VirtualProtect(reinterpret_cast<void*>(m_address), m_size, Protection, m_originalProtection == 0 ? reinterpret_cast<PDWORD>(&m_originalProtection) : reinterpret_cast<PDWORD>(&OldProtection)) != 0;
+    uint32_t oldProtection = 0;
+    auto result = VirtualProtect(reinterpret_cast<void*>(m_address), m_size, aProtection, m_originalProtection == 0 ? reinterpret_cast<PDWORD>(&m_originalProtection) : reinterpret_cast<PDWORD>(&oldProtection)) != 0;
 
-    if (Result == false)
+    if (result == false)
     {
         throw std::runtime_error("Cannot change the protection");
     }
 
-    return Result;
+    return result;
 }
 
 bool RenHook::Memory::Protection::Restore()

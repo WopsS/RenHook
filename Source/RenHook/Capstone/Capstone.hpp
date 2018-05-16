@@ -16,11 +16,11 @@ namespace RenHook
 
         Capstone& operator=(Capstone&&) = delete;
 
-        const size_t Disassemble(const uintptr_t Address, const size_t Size);
+        const size_t Disassemble(const uintptr_t aAddress, const size_t aSize);
 
-        cs_insn* GetInstructionAt(size_t Index) const;
+        cs_insn* GetInstructionAt(size_t aIndex) const;
 
-        const size_t GetInstructionSize(size_t Index) const;
+        const size_t GetInstructionSize(size_t aIndex) const;
 
         const size_t GetTotalNumberOfInstructions() const;
 

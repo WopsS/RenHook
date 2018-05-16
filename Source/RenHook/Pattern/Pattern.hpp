@@ -10,10 +10,10 @@ namespace RenHook
         {
         public:
 
-            Match(const uintptr_t Address);
+            Match(const uintptr_t aAddress);
             ~Match() = default;
 
-            Match& Extract(const size_t Bytes);
+            Match& Extract(const size_t aBytes);
 
             template<typename T>
             T To()
@@ -37,12 +37,12 @@ namespace RenHook
             uintptr_t m_address;
         };
 
-        Pattern(std::string Pattern);
+        Pattern(std::string aPattern);
         ~Pattern() = default;
 
-        Pattern& Expect(const size_t Expected);
+        Pattern& Expect(const size_t aExpected);
 
-        Match& Get(const size_t Index);
+        Match& Get(const size_t aIndex);
 
     private:
 

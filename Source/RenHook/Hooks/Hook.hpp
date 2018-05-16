@@ -9,47 +9,47 @@ namespace RenHook
     {
     public:
 
-        Hook(const uintptr_t Address, const uintptr_t Detour);
+        Hook(const uintptr_t aAddress, const uintptr_t aDetour);
         ~Hook();
 
         template<typename T>
-        static std::shared_ptr<Hook> Create(const uintptr_t Address, const T Detour, const bool IsInIDARange = false, const std::string& Key = "")
+        static std::shared_ptr<Hook> Create(const uintptr_t aAddress, const T aDetour, const bool aIsInIDARange = false, const std::string& aKey = "")
         {
-            return RenHook::Managers::Hooks::Create(Address, Detour, IsInIDARange, Key);
+            return RenHook::Managers::Hooks::Create(aAddress, aDetour, aIsInIDARange, aKey);
         }
 
         template<typename T>
-        static std::shared_ptr<Hook> Create(const std::string& Module, const std::string& Function, const T Detour, const std::string& Key = "")
+        static std::shared_ptr<Hook> Create(const std::string& aModule, const std::string& aFunction, const T aDetour, const std::string& aKey = "")
         {
-            return RenHook::Managers::Hooks::Create(Module, Function, Detour, Key);
+            return RenHook::Managers::Hooks::Create(aModule, aFunction, aDetour, aKey);
         }
 
         template<typename T>
-        static std::shared_ptr<Hook> Create(std::string Pattern, const T Detour, const std::string& Key = L"")
+        static std::shared_ptr<Hook> Create(std::string aPattern, const T aDetour, const std::string& aKey = L"")
         {
-            return RenHook::Managers::Hooks::Create(Pattern, Detour, Key);
+            return RenHook::Managers::Hooks::Create(aPattern, aDetour, aKey);
         }
 
-        static std::shared_ptr<Hook> Get(const uintptr_t Address);
+        static std::shared_ptr<Hook> Get(const uintptr_t aAddress);
 
-        static std::shared_ptr<Hook> Get(const std::string& Key);
+        static std::shared_ptr<Hook> Get(const std::string& aKey);
 
-        static std::shared_ptr<Hook> Get(const std::string& Module, const std::string& Function);
+        static std::shared_ptr<Hook> Get(const std::string& aModule, const std::string& aFunction);
 
-        static void Remove(const uintptr_t Address);
+        static void Remove(const uintptr_t aAddress);
 
-        static void Remove(const std::string& Key);
+        static void Remove(const std::string& aKey);
 
-        static void Remove(const std::string& Module, const std::string& Function);
+        static void Remove(const std::string& aModule, const std::string& aFunction);
 
         static void RemoveAll();
 
-        static void SetImageBase(const uintptr_t Value);
+        static void SetImageBase(const uintptr_t aValue);
 
         template<typename T, typename... Args>
-        auto Call(Args&& ...args)
+        auto Call(Args&& ...aArgs)
         {
-            return GetOriginal<T>()(std::forward<Args>(args)...);
+            return GetOriginal<T>()(std::forward<Args>(aArgs)...);
         }
 
         template<typename T>
@@ -63,27 +63,27 @@ namespace RenHook
     private:
 
         template<typename T>
-        const T CalculateDisplacement(const uintptr_t From, const uintptr_t To, const size_t Size) const
+        const T CalculateDisplacement(const uintptr_t aFrom, const uintptr_t aTo, const size_t aSize) const
         {
-            if (To < From)
+            if (aTo < aFrom)
             {
-                return static_cast<T>(0 - (From - To) - Size);
+                return static_cast<T>(0 - (aFrom - aTo) - aSize);
             }
 
-            return static_cast<T>(To - (From + Size));
+            return static_cast<T>(aTo - (aFrom + aSize));
         }
 
-        const size_t CheckSize(const RenHook::Capstone& Capstone, const size_t MinimumSize) const;
+        const size_t CheckSize(const RenHook::Capstone& aCapstone, const size_t aMinimumSize) const;
 
-        const size_t CountConditionalJumps(const uintptr_t Address) const;
+        const size_t CountConditionalJumps(const uintptr_t aAddress) const;
 
-        const size_t GetMinimumSize(const uintptr_t Address) const;
+        const size_t GetMinimumSize(const uintptr_t aAddress) const;
 
-        const bool IsConditionalJump(const uint8_t* Bytes, const size_t Size) const;
+        const bool IsConditionalJump(const uint8_t* aBytes, const size_t aSize) const;
 
-        const void RelocateRIP(const uintptr_t From, const uintptr_t To) const;
+        const void RelocateRIP(const uintptr_t aFrom, const uintptr_t aTo) const;
 
-        const size_t WriteJump(const uintptr_t From, const uintptr_t To, const size_t Size) const;
+        const size_t WriteJump(const uintptr_t aFrom, const uintptr_t aTo, const size_t aSize) const;
 
         uintptr_t m_address;
 

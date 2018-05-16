@@ -25,39 +25,39 @@ RenHook::Capstone::~Capstone()
     }
 }
 
-const size_t RenHook::Capstone::Disassemble(const uintptr_t Address, const size_t Size)
+const size_t RenHook::Capstone::Disassemble(const uintptr_t aAddress, const size_t aSize)
 {
-    size_t Result = 0;
+    size_t result = 0;
 
     if (m_handle != 0)
     {
         ReleaseInstructions();
 
-        Result = cs_disasm(m_handle, reinterpret_cast<uint8_t*>(Address), Size, Address, 0, &m_instructionInfo);
-        m_instructions = Result;
+        result = cs_disasm(m_handle, reinterpret_cast<uint8_t*>(aAddress), aSize, aAddress, 0, &m_instructionInfo);
+        m_instructions = result;
     }
 
-    return Result;
+    return result;
 }
 
-cs_insn* RenHook::Capstone::GetInstructionAt(size_t Index) const
+cs_insn* RenHook::Capstone::GetInstructionAt(size_t aIndex) const
 {
-    if (Index < 0 || Index >= m_instructions)
+    if (aIndex < 0 || aIndex >= m_instructions)
     {
         return nullptr;
     }
 
-    return &m_instructionInfo[Index];
+    return &m_instructionInfo[aIndex];
 }
 
-const size_t RenHook::Capstone::GetInstructionSize(size_t Index) const
+const size_t RenHook::Capstone::GetInstructionSize(size_t aIndex) const
 {
-    if (Index < 0 || Index >= m_instructions)
+    if (aIndex < 0 || aIndex >= m_instructions)
     {
         return 0;
     }
 
-    return m_instructionInfo[Index].size;
+    return m_instructionInfo[aIndex].size;
 }
 
 const size_t RenHook::Capstone::GetTotalNumberOfInstructions() const

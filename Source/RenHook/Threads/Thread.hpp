@@ -6,7 +6,7 @@ namespace RenHook::Threads
     {
     public:
 
-        Thread(const uint32_t Id);
+        Thread(const uint32_t aId);
         Thread(const Thread&) = delete;
         Thread(Thread&& rhs);
 
