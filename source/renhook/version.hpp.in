@@ -2,9 +2,9 @@
 
 #include <cstdint>
 
-namespace dodbm
+namespace renhook
 {
-    namespace renhook
+    namespace version
     {
         constexpr const char* as_string()
         {
