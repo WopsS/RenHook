@@ -17,14 +17,14 @@ platform:
 
 pull_requests:
   do_not_increment_build_number: true
-  
+
 install:
   - cmd: git submodule update --init --recursive
 
 before_build:
   - ps: mkdir build
   - ps: cd build
-  - ps: cmake .. -DCMAKE_GENERATOR_PLATFORM=$env:platform
+  - ps: cmake .. -DCMAKE_GENERATOR_PLATFORM="$env:platform"
 
 test_script:
   - ps: cd "$env:bin_dir"
