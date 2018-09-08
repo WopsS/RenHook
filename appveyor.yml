@@ -2,9 +2,6 @@ clone_depth: 1
 image: Visual Studio 2017
 version: '{branch}.{build}'
 
-build:
-  verbosity: minimal
-
 configuration:
   - Debug
   - Release
