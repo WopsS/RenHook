@@ -26,6 +26,10 @@ before_build:
   - ps: cd build
   - ps: cmake .. -DCMAKE_GENERATOR_PLATFORM="$env:platform"
 
+build:
+  project: build/RenHook.sln
+  verbosity: minimal
+
 test_script:
   - ps: cd "$env:bin_dir"
   - ps: ./tests.exe
