@@ -4,6 +4,8 @@
 
 An open-source **x64** hooking library for **Windows**.
 
+*This branch is being reworked, for a stable version check the **[release](https://github.com/WopsS/RenHook/tree/release)** branch.*
+
 ## Build instructions
 
 ### Requirements
