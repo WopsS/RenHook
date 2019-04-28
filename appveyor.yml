@@ -29,7 +29,7 @@ build:
 
 test_script:
   - ps: cd "$env:bin_dir"
-  - ps: ./tests.exe
+  - ps: ./Tests.exe
 
 artifacts:
   - path: build/$(configuration)/libs
