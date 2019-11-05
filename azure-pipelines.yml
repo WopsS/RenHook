@@ -39,6 +39,6 @@ steps:
     displayName: Test
     workingDirectory: build/$(configuration)/bin
 
-  - publish: $(Build.SourcesDirectory)/build/$(platform)
+  - publish: $(Build.SourcesDirectory)/build/$(configuration)
     displayName: Publish artifacts
     artifact: renhook-$(platform)_$(configuration)
