@@ -19,7 +19,6 @@ strategy:
 steps:
   - checkout: self
     clean: true
-    fetchDepth: 1
     submodules: recursive
 
   - script: mkdir build
