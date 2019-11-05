@@ -1,5 +1,5 @@
 clone_depth: 1
-image: Visual Studio 2017
+image: Visual Studio 2019
 version: '{branch}.{build}'
 
 configuration:
@@ -10,6 +10,7 @@ environment:
   bin_dir: $(APPVEYOR_BUILD_FOLDER)/build/$(configuration)/bin
 
 platform:
+  - Win32
   - x64
 
 pull_requests:

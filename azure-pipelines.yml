@@ -1,0 +1,44 @@
+pool:
+  vmImage: windows-latest
+
+strategy:
+  matrix:
+    x86_debug:
+      platform: Win32
+      configuration: Debug
+    x86_release:
+      platform: Win32
+      configuration: Release
+    x86-64_debug:
+      platform: x64
+      configuration: Debug
+    x86-64_release:
+      platform: x64
+      configuration: Release
+
+steps:
+  - checkout: self
+    fetchDepth: 1
+    submodules: recursive
+
+  - script: mkdir build
+    displayName: Make build dir
+
+  - script: cmake .. -DCMAKE_GENERATOR_PLATFORM=$(platform)
+    displayName: CMake
+    workingDirectory: build
+
+  - task: VSBuild@1
+    displayName: Build
+    inputs:
+      solution: build/*.sln
+      platform: $(platform)
+      configuration: $(configuration)
+
+  - script: Tests.exe
+    displayName: Test
+    workingDirectory: build/$(configuration)/bin
+
+  - publish: $(Build.SourcesDirectory)/build/$(platform)
+    displayName: Publish artifacts
+    artifact: renhook-$(platform)_$(configuration)
