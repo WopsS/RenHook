@@ -37,7 +37,7 @@ if(RENHOOK_ENABLE_TESTS)
     set(CATCH_INSTALL_DOCS OFF CACHE INTERNAL "")
     set(CATCH_INSTALL_HELPERS OFF CACHE INTERNAL "")
 
-    add_subdirectory(dependencies/catch2)
+    add_subdirectory(deps/catch2)
 endif()
 
 # Zydis
@@ -54,11 +54,11 @@ set(ZYDIS_BUILD_TOOLS OFF CACHE INTERNAL "")
 set(ZYDIS_FUZZ_AFL_FAST OFF CACHE INTERNAL "")
 set(ZYDIS_DEV_MODE OFF CACHE INTERNAL "")
 
-add_subdirectory(dependencies/zydis)
-set_target_properties(Zydis PROPERTIES FOLDER "dependencies")
+add_subdirectory(deps/zydis)
+set_target_properties(Zydis PROPERTIES FOLDER "Dependencies")
 
 # Projects.
-add_subdirectory(source)
+add_subdirectory(src)
 
 if(RENHOOK_ENABLE_TESTS)
     add_subdirectory(tests)

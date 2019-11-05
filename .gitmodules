@@ -1,6 +1,6 @@
-[submodule "dependencies/catch2"]
-	path = dependencies/catch2
+[submodule "deps/catch2"]
+	path = deps/catch2
 	url = https://github.com/catchorg/Catch2.git
-[submodule "dependencies/zydis"]
-	path = dependencies/zydis
+[submodule "deps/zydis"]
+	path = deps/zydis
 	url = https://github.com/zyantific/zydis.git
