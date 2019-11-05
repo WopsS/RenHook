@@ -70,16 +70,27 @@ TEST_CASE("pattern")
     SECTION("48 89 5C 24 08")
     {
         renhook::pattern pattern({ 0x48, 0x89, 0x5C, 0x24, 0x08 });
-        REQUIRE(pattern.find(0xCC, start, end).size() == 1);
+        auto offsets = pattern.find(0xCC, start, end);
+
+        REQUIRE(offsets.size() == 1);
+        REQUIRE(offsets[0] == reinterpret_cast<uintptr_t>(&fake_memory[0]));
     }
     SECTION("E8 ? ? ? ?")
     {
         renhook::pattern pattern({ 0xE8, 0xCC, 0xCC, 0xCC, 0xCC });
-        REQUIRE(pattern.find(0xCC, start, end).size() == 3);
+        auto offsets = pattern.find(0xCC, start, end);
+
+        REQUIRE(offsets.size() == 3);
+        REQUIRE(offsets[0] == reinterpret_cast<uintptr_t>(&fake_memory[23]));
+        REQUIRE(offsets[1] == reinterpret_cast<uintptr_t>(&fake_memory[35]));
+        REQUIRE(offsets[2] == reinterpret_cast<uintptr_t>(&fake_memory[44]));
     }
     SECTION("48 89 79 F8 E8 ? ? ? ? 48 8B 0D ? ? ? ?")
     {
         renhook::pattern pattern({ 0x48, 0x89, 0x79, 0xF8, 0xE8, 0xCC, 0xCC, 0xCC, 0xCC, 0x48, 0x8B, 0x0D, 0xCC, 0xCC, 0xCC, 0xCC });
-        REQUIRE(pattern.find(0xCC, start, end).size() == 1);
+        auto offsets = pattern.find(0xCC, start, end);
+
+        REQUIRE(offsets.size() == 1);
+        REQUIRE(offsets[0] == reinterpret_cast<uintptr_t>(&fake_memory[19]));
     }
 }
