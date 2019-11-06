@@ -4,28 +4,56 @@
 
 namespace renhook
 {
+    /**
+     * @brief The namespace containing library version helpers.
+     */
     namespace version
     {
+        /**
+         * @brief Return the version as string.
+         *
+         * @return The version as string.
+         */
         constexpr const char* as_string()
         {
             return "@PROJECT_VERSION@";
         }
 
+        /**
+         * @brief Return the version as integer (uint32_t).
+         *
+         * @return The version as integer (uint32_t).
+         */
         constexpr uint32_t as_int()
         {
             return @PROJECT_VERSION_INT@;
         }
 
+        /**
+         * @brief Return the major version of the library.
+         *
+         * @return The major version of the library.
+         */
         constexpr uint8_t get_major()
         {
             return @PROJECT_VERSION_MAJOR@;
         }
 
+        /**
+         * @brief Return the minor version of the library.
+         *
+         * @return The minor version of the library.
+         */
         constexpr uint8_t get_minor()
         {
             return @PROJECT_VERSION_MINOR@;
         }
 
+        /**
+         * @brief Return the patch version of the library.
+         *
+         * @return The patch version of the library.
+         */
         constexpr uint8_t get_patch()
         {
             return @PROJECT_VERSION_PATCH@;
