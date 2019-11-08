@@ -14,6 +14,11 @@ namespace renhook
     public:
 
         /**
+         * @brief Construct a new empty pattern.
+         */
+        pattern() = default;
+
+        /**
          * @brief Construct a new pattern.
          *
          * @param[in] pattern The pattern.
@@ -28,6 +33,21 @@ namespace renhook
         pattern(std::initializer_list<uint8_t> pattern);
 
         ~pattern() = default;
+
+        /**
+         * @brief Checks if the pattern is empty.
+         *
+         * @return true if the pattern is empty.
+         * @return false otherwise.
+         */
+        bool empty() const;
+
+        /**
+         * @brief Return the size of the pattern.
+         *
+         * @return The size of the patter.
+         */
+        size_t size() const;
 
         /**
          * @brief Return an array of addresses where the pattern was found.
