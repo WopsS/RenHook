@@ -403,7 +403,7 @@ namespace renhook
 
 #ifndef _WIN64
                         // On x86 we have a displacement instead of absolute address.
-                        instr.disp.real_address += reinterpret_cast<uintptr_t>(jmp_instr_address) + jmp_size;
+                        instr.disp.absolute_address += reinterpret_cast<uintptr_t>(jmp_instr_address) + jmp_size;
 #endif
                     }
 
