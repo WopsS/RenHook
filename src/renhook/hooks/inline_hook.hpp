@@ -229,7 +229,7 @@ namespace renhook
             m_block = static_cast<uint8_t*>(global_allocator.alloc());
 
             // Write the bytes to our memory.
-            virtual_protect block_protection(m_block, memory_allocator::block_size, protection::write);
+            virtual_protect block_protection(m_block, memory_allocator::block_size, protection::read | protection::write | protection::execute);
             hook_writer block_writer(m_block);
 
             block_writer.copy_from(m_target_address, m_decoded_length);
@@ -238,7 +238,7 @@ namespace renhook
             relocate_instructions(instructions, &block_writer);
 
             // Write the jump in the original function.
-            virtual_protect func_protection(m_target_address, m_decoded_length, protection::write);
+            virtual_protect func_protection(m_target_address, m_decoded_length, protection::read | protection::write | protection::execute);
             hook_writer func_writer(m_target_address);
 
             func_writer.write_jump(m_detour_address);
@@ -261,7 +261,7 @@ namespace renhook
             }
 
             suspend_threads threads(m_target_address, m_decoded_length);
-            virtual_protect func_protection(m_target_address, m_decoded_length, protection::write);
+            virtual_protect func_protection(m_target_address, m_decoded_length, protection::read | protection::write | protection::execute);
 
             hook_writer func_writer(m_target_address);
             func_writer.copy_from(m_block, m_decoded_length);
