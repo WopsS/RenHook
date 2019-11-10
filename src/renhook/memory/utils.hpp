@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RENHOOK_MEMORY_UTILS_H
+#define RENHOOK_MEMORY_UTILS_H
 
 #include <type_traits>
 
@@ -40,3 +41,4 @@ namespace renhook
         }
     }
 }
+#endif

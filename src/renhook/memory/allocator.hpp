@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RENHOOK_MEMORY_ALLOCATOR_H
+#define RENHOOK_MEMORY_ALLOCATOR_H
 
 #include <mutex>
 
@@ -72,3 +73,4 @@ namespace renhook
         };
     }
 }
+#endif

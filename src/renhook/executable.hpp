@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RENHOOK_EXECUTABLE_H
+#define RENHOOK_EXECUTABLE_H
 
 #include <cstdint>
 
@@ -31,3 +32,4 @@ namespace renhook
         uintptr_t get_code_end_address();
     }
 }
+#endif

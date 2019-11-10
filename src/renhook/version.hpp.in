@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RENHOOK_VERSION_H
+#define RENHOOK_VERSION_H
 
 #include <cstdint>
 
@@ -60,3 +61,4 @@ namespace renhook
         }
     }
 }
+#endif

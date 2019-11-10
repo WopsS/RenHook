@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RENHOOK_PATTERN_H
+#define RENHOOK_PATTERN_H
 
 #include <cstdint>
 #include <initializer_list>
@@ -98,3 +99,4 @@ namespace renhook
         std::vector<uint8_t> m_pattern;
     };
 }
+#endif

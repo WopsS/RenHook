@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RENHOOK_EXCEPTION_H
+#define RENHOOK_EXCEPTION_H
 
 #include <cstdint>
 #include <stdexcept>
@@ -38,3 +39,4 @@ namespace renhook
         ~exception() = default;
     };
 }
+#endif
