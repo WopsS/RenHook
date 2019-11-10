@@ -1,6 +1,7 @@
 #ifndef RENHOOK_MEMORY_ALLOCATOR_H
 #define RENHOOK_MEMORY_ALLOCATOR_H
 
+#include <cstdint>
 #include <mutex>
 
 namespace renhook
@@ -10,18 +11,20 @@ namespace renhook
         /**
          * @brief A memory allocator class.
          */
-        class allocator
+        class memory_allocator
         {
         public:
 
-            allocator() noexcept;
-            ~allocator() noexcept;
+            static constexpr size_t block_size = 256;
 
-            allocator(allocator&) = delete;
-            allocator(allocator&&) = delete;
+            memory_allocator() noexcept;
+            ~memory_allocator() noexcept;
 
-            allocator& operator=(const allocator&) = delete;
-            allocator& operator=(const allocator&&) = delete;
+            memory_allocator(memory_allocator&) = delete;
+            memory_allocator(memory_allocator&&) = delete;
+
+            memory_allocator& operator=(const memory_allocator&) = delete;
+            memory_allocator& operator=(memory_allocator&&) = delete;
 
             /**
              * @brief Return a memory block of 256 bytes.

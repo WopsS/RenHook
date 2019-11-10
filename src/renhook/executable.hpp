@@ -18,7 +18,7 @@ namespace renhook
         uintptr_t get_base_address();
 
         /**
-         * @brief Returns the start of the code section .
+         * @brief Returns the start of the code section.
          *
          * @return The start of the code section.
          */
@@ -30,6 +30,13 @@ namespace renhook
          * @return The address of the executable.
          */
         uintptr_t get_code_end_address();
+
+        /**
+         * @brief Returns the size of code (text) section.
+         *
+         * @return The size of code (text) section.
+         */
+        uintptr_t get_code_size();
     }
 }
 #endif

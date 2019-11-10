@@ -29,3 +29,9 @@ uintptr_t renhook::executable::get_code_end_address()
     static auto code_end_address = get_code_base_address() + get_nt_header()->OptionalHeader.SizeOfCode;
     return code_end_address;
 }
+
+size_t renhook::executable::get_code_size()
+{
+    static auto code_size = get_nt_header()->OptionalHeader.SizeOfCode;
+    return code_size;
+}

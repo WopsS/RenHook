@@ -1,12 +1,22 @@
 #include <catch2/catch.hpp>
 
-#include <renhook/memory/allocator.hpp>
+#include <Windows.h>
 
-TEST_CASE("memory::allocator", "[memory][allocator]")
+#include <renhook/memory/memory_allocator.hpp>
+#include <renhook/memory/virtual_protect.hpp>
+
+TEST_CASE("memory::memory_allocator", "[memory][memory_allocator]")
 {
-    renhook::memory::allocator allocator;
+    renhook::memory::memory_allocator allocator;
 
     char* block_a = static_cast<char*>(allocator.alloc());
+
+    MEMORY_BASIC_INFORMATION memoryInfo = { 0 };
+    VirtualQuery(block_a, &memoryInfo, sizeof(memoryInfo));
+
+    REQUIRE(memoryInfo.Protect == PAGE_EXECUTE_READ);
+
+    renhook::memory::virtual_protect protection(block_a, renhook::memory::memory_allocator::block_size, renhook::memory::protection::write);
 
     REQUIRE(block_a != nullptr);
     block_a[0] = '1';
@@ -19,7 +29,7 @@ TEST_CASE("memory::allocator", "[memory][allocator]")
     REQUIRE(block_c != nullptr);
 
     std::vector<void*> blocks;
-    for (size_t i = 0; i < 1000000; i++)
+    for (size_t i = 0; i < 10000; i++)
     {
         auto block = allocator.alloc();
         blocks.emplace_back(block);

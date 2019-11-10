@@ -25,5 +25,10 @@ TEST_CASE("executable")
             auto code_end_address = code_base_address + nt_header->OptionalHeader.SizeOfCode;
             REQUIRE(code_end_address == renhook::executable::get_code_end_address());
         }
+        SECTION("size")
+        {
+            auto code_size = nt_header->OptionalHeader.SizeOfCode;
+            REQUIRE(code_size == renhook::executable::get_code_size());
+        }
     }
 }

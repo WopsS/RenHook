@@ -1,16 +1,14 @@
-#include <renhook/memory/allocator.hpp>
+#include <renhook/memory/memory_allocator.hpp>
 
 #include <Windows.h>
 
 #include <renhook/exception.hpp>
 #include <renhook/memory/utils.hpp>
+#include <renhook/memory/virtual_protect.hpp>
 
-namespace
-{
-    constexpr size_t block_size = 256;
-}
+renhook::memory::memory_allocator global_allocator;
 
-renhook::memory::allocator::allocator() noexcept
+renhook::memory::memory_allocator::memory_allocator() noexcept
     : m_regions(nullptr)
 {
     SYSTEM_INFO system_info;
@@ -19,7 +17,7 @@ renhook::memory::allocator::allocator() noexcept
     m_region_size = system_info.dwAllocationGranularity;
 }
 
-renhook::memory::allocator::~allocator() noexcept
+renhook::memory::memory_allocator::~memory_allocator() noexcept
 {
     while (m_regions)
     {
@@ -30,7 +28,7 @@ renhook::memory::allocator::~allocator() noexcept
     }
 }
 
-void* renhook::memory::allocator::alloc()
+void* renhook::memory::memory_allocator::alloc()
 {
     std::lock_guard<std::mutex> _(m_mutex);
 
@@ -62,6 +60,8 @@ void* renhook::memory::allocator::alloc()
         }
     }
 
+    virtual_protect protection(region, m_region_size, protection::read | protection::write);
+
     auto block = region->next_block;
     region->next_block = block->next;
 
@@ -69,12 +69,14 @@ void* renhook::memory::allocator::alloc()
     return block;
 }
 
-void renhook::memory::allocator::free(void* address)
+void renhook::memory::memory_allocator::free(void* address)
 {
     std::lock_guard<std::mutex> _(m_mutex);
 
     auto region = reinterpret_cast<regionptr_t>(utils::align_down(reinterpret_cast<uintptr_t>(address), m_region_size));
     auto block = static_cast<blockptr_t>(address);
+
+    virtual_protect protection(region, m_region_size, protection::read | protection::write);
 
     block->next = region->next_block;
     region->next_block = block;
@@ -90,11 +92,13 @@ void renhook::memory::allocator::free(void* address)
 
         if (prev)
         {
+            virtual_protect protection(prev, m_region_size, protection::write);
             prev->next = next;
         }
 
         if (next)
         {
+            virtual_protect protection(next, m_region_size, protection::write);
             next->prev = prev;
         }
 
@@ -107,7 +111,7 @@ void renhook::memory::allocator::free(void* address)
     }
 }
 
-renhook::memory::allocator::regionptr_t renhook::memory::allocator::alloc_region()
+renhook::memory::memory_allocator::regionptr_t renhook::memory::memory_allocator::alloc_region()
 {
     auto region = static_cast<regionptr_t>(VirtualAlloc(nullptr, m_region_size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE));
     if (!region)
@@ -134,6 +138,7 @@ renhook::memory::allocator::regionptr_t renhook::memory::allocator::alloc_region
 
     if (m_regions)
     {
+        virtual_protect protection(m_regions, m_region_size, protection::write);
         m_regions->prev = region;
     }
 
@@ -141,5 +146,6 @@ renhook::memory::allocator::regionptr_t renhook::memory::allocator::alloc_region
     region->next = m_regions;
     m_regions = region;
 
+    virtual_protect protection(region, m_region_size, protection::read | protection::execute, true);
     return region;
 }
