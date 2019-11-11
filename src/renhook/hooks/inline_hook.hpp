@@ -9,6 +9,7 @@
 #include <renhook/hook_writer.hpp>
 #include <renhook/pattern.hpp>
 #include <renhook/suspend_threads.hpp>
+#include <renhook/utils.hpp>
 #include <renhook/zydis.hpp>
 
 #include <renhook/memory/memory_allocator.hpp>
@@ -108,6 +109,7 @@ namespace renhook
         {
             m_module = module;
             m_function = function;
+            m_detour_address = detour_address;
         }
 
         /**
