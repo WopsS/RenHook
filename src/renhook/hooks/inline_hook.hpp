@@ -158,7 +158,21 @@ namespace renhook
 
         ~inline_hook()
         {
-            detach();
+            if (m_attached)
+            {
+                // Hacky fix: Check if the memory is stil valid. Usually it isn't when the program is finished and all global variables are uninitialized.
+                // Another solution would be to store the global allocator and all hooks in a structure then remove the hooks when the structure's destructor is called,
+                // but that would require the library to consume more memory.
+
+                MEMORY_BASIC_INFORMATION memory_info = { 0 };
+                if (VirtualQuery(m_block, &memory_info, sizeof(memory_info)))
+                {
+                    if (memory_info.State == MEM_COMMIT)
+                    {
+                        detach();
+                    }
+                }
+            }
         }
 
         inline_hook& operator=(inline_hook&& rhs) noexcept
