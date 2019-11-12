@@ -38,7 +38,7 @@ TEST_CASE("memory::memory_allocator", "[memory][memory_allocator]")
     size_t diff = std::abs(reinterpret_cast<intptr_t>(block_c) - reinterpret_cast<intptr_t>(block_b));
     REQUIRE(diff < region_size);
 
-    REQUIRE_THROWS(allocator.alloc(minimum_address + 0x10500, maximum_address / 2));
+    REQUIRE_THROWS(allocator.alloc(reinterpret_cast<uintptr_t>(block_c), reinterpret_cast<uintptr_t>(block_c) + 0x10));
 
     auto block_d = allocator.alloc(maximum_address / 2 + 0x100, maximum_address);
     REQUIRE(block_d != nullptr);
