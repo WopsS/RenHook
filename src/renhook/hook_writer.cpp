@@ -24,24 +24,28 @@ void renhook::hook_writer::copy_from(uintptr_t address, size_t length)
     copy_from(reinterpret_cast<uint8_t*>(address), length);
 }
 
-void renhook::hook_writer::write_jump(uintptr_t target_address)
+#ifdef _WIN64
+void renhook::hook_writer::write_indirect_jump(uintptr_t target_address)
 {
     uint8_t bytes[] =
     {
-#ifdef _WIN64
         0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,             // jmp [rip+0]
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00  // Address where to jump.
-#else
-        0xE9, 0x00, 0x00, 0x00, 0x00                    // jmp [rip+0x??]
-#endif
     };
 
-#ifdef _WIN64
     *(reinterpret_cast<uintptr_t*>(&bytes[6])) = target_address;
-#else
-    *(reinterpret_cast<intptr_t*>(&bytes[1])) = utils::calculate_displacement(reinterpret_cast<uintptr_t>(m_address), target_address, sizeof(bytes));
+    copy_from(bytes, sizeof(bytes));
+}
 #endif
 
+void renhook::hook_writer::write_relative_jump(uintptr_t target_address)
+{
+    uint8_t bytes[] =
+    {
+        0xE9, 0x00, 0x00, 0x00, 0x00    // jmp [rip+0x??]
+    };
+
+    *(reinterpret_cast<int32_t*>(&bytes[1])) = static_cast<int32_t>(utils::calculate_displacement(reinterpret_cast<uintptr_t>(m_address), target_address, 5));
     copy_from(bytes, sizeof(bytes));
 }
 

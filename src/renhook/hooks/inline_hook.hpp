@@ -1,7 +1,10 @@
 #ifndef RENHOOK_HOOKS_INLINE_HOOK_H
 #define RENHOOK_HOOKS_INLINE_HOOK_H
 
+#include <algorithm>
+#include <limits>
 #include <string>
+
 #include <Windows.h>
 
 #include <renhook/exception.hpp>
@@ -15,6 +18,9 @@
 #include <renhook/memory/memory_allocator.hpp>
 #include <renhook/memory/virtual_protect.hpp>
 
+#undef min
+#undef max
+
 namespace renhook
 {
     /**
@@ -26,6 +32,16 @@ namespace renhook
     class inline_hook
     {
     public:
+
+        /**
+         * @brief The size of a relative jump.
+         */
+        static constexpr size_t relative_jump_size = 5;
+
+        /**
+         * @brief The size of an indirect jump.
+         */
+        static constexpr size_t indirect_jump_size = 14;
 
         /**
          * @brief Construct an empty hook.
@@ -223,28 +239,65 @@ namespace renhook
             m_detour_address = skip_jumps(m_detour_address);
 
             renhook::zydis zydis;
-            auto instructions = zydis.decode(m_target_address, executable::get_code_size(), hook_size, m_decoded_length);
+            auto decoded_info = zydis.decode(m_target_address, executable::get_code_size(), relative_jump_size, m_decoded_length);
+
+            // Find the jump bounds (± 2GB).
+            auto lower_bound = std::min(m_target_address, decoded_info.lowest_relative_address);
+            auto upper_bound = std::max(m_target_address, decoded_info.highest_relative_address);
+
+            constexpr auto two_gb_in_bytes = std::numeric_limits<int32_t>::max();
+            constexpr auto max_pointer_address = std::numeric_limits<uintptr_t>::max();
+
+            // Used to prevent upper bound overflow.
+            constexpr auto max_upper_bound_memory = max_pointer_address - two_gb_in_bytes;
+
+            if (lower_bound > two_gb_in_bytes)
+            {
+                lower_bound -= two_gb_in_bytes;
+            }
+
+            if (upper_bound < max_pointer_address)
+            {
+                upper_bound += two_gb_in_bytes;
+            }
 
             suspend_threads threads(m_target_address, m_decoded_length);
 
             extern memory_allocator global_allocator;
-            m_block = static_cast<uint8_t*>(global_allocator.alloc());
+            m_block = static_cast<uint8_t*>(global_allocator.alloc(lower_bound, upper_bound));
 
             // Write the bytes to our memory.
             virtual_protect block_protection(m_block, memory_allocator::block_size, protection::read | protection::write | protection::execute);
             hook_writer block_writer(m_block);
 
             block_writer.copy_from(m_target_address, m_decoded_length);
-            block_writer.write_jump(m_target_address + m_decoded_length);
 
-            relocate_instructions(instructions, &block_writer);
+#ifdef _WIN64
+            block_writer.write_indirect_jump(m_target_address + m_decoded_length);
+#else
+            block_writer.write_relative_jump(m_target_address + m_decoded_length);
+#endif
+
+#ifdef _WIN64
+            // On x86-64 place an indirect jump to the detour. It might be far away.
+            block_writer.write_indirect_jump(m_detour_address);
+#endif
+
+            relocate_instructions(decoded_info.instructions, &block_writer);
 
             // Write the jump in the original function.
             virtual_protect func_protection(m_target_address, m_decoded_length, protection::read | protection::write | protection::execute);
             hook_writer func_writer(m_target_address);
 
-            func_writer.write_jump(m_detour_address);
-            func_writer.write_nops(m_decoded_length - hook_size);
+#ifdef _WIN64
+            // On x86-64 jump to our memory then jump to the detour.
+            func_writer.write_relative_jump(reinterpret_cast<uintptr_t>(m_block) + m_decoded_length + indirect_jump_size);
+#else
+            // On x86 jump directly to the detour.
+            func_writer.write_relative_jump(m_detour_address);
+#endif
+
+            func_writer.write_nops(m_decoded_length - relative_jump_size);
 
             flush_cache();
             m_attached = true;
@@ -269,9 +322,9 @@ namespace renhook
             func_writer.copy_from(m_block, m_decoded_length);
 
             renhook::zydis zydis;
-            auto instructions = zydis.decode(reinterpret_cast<uintptr_t>(m_block), executable::get_code_size(), m_decoded_length, m_decoded_length);
+            auto decoded_info = zydis.decode(reinterpret_cast<uintptr_t>(m_block), executable::get_code_size(), m_decoded_length, m_decoded_length);
 
-            relocate_instructions(instructions, nullptr);
+            relocate_instructions(decoded_info.instructions, nullptr);
 
             extern memory_allocator global_allocator;
             global_allocator.free(m_block);
@@ -297,15 +350,6 @@ namespace renhook
         }
 
     private:
-
-        /**
-         * @brief The size of the hook.
-         */
-#ifdef _WIN64
-        static constexpr size_t hook_size = 14;
-#else
-        static constexpr size_t hook_size = 5;
-#endif
 
         /**
          * @brief Check if the first instruction is a jump, if it is follow it until the real address of the function is found.
@@ -364,66 +408,80 @@ namespace renhook
          * @param instructions[in] An array of decoded instructions.
          * @param block_writer[in] The writer of the block (only necessary if the hook is attached).
          */
-        void relocate_instructions(std::vector<zydis::instruction>& instructions, hook_writer* block_writer)
+        void relocate_instructions(std::vector<zydis::decoded_info::instruction>& instructions, hook_writer* block_writer)
         {
             auto instr_address = m_attached ? m_target_address : reinterpret_cast<uintptr_t>(m_block);
             size_t index = 0;
 
             for (auto& instr : instructions)
             {
-                // Check if it is a conditional jump.
-                if (instr.is_relative &&
-                    ((instr.decoded.opcode & 0xF0) == 0x70 ||
-                     (instr.decoded.opcode_map == ZYDIS_OPCODE_MAP_0F && (instr.decoded.opcode & 0xF0) == 0x80) ||
-                      instr.decoded.mnemonic == ZYDIS_MNEMONIC_CALL))
+                if (instr.is_relative)
                 {
                     // Calculate where the displacement is in instruction.
                     auto disp_address = instr_address + instr.disp.offset;
 
+                    if (instr.add_to_jump_table && instr.disp.size < sizeof(int32_t) * 8)
+                    {
 #ifdef _WIN64
-                    constexpr size_t jmp_size = 14;
-                    constexpr size_t jmp_instr_size = 6;
+                        constexpr size_t jmp_size = indirect_jump_size;
+                        constexpr size_t jmp_instr_size = 6;
 #else
-                    constexpr size_t jmp_size = 5;
-                    constexpr size_t jmp_instr_size = 1;
+                        constexpr size_t jmp_size = relative_jump_size;
+                        constexpr size_t jmp_instr_size = 1;
 #endif
 
-                    auto table_address = m_block + m_decoded_length + hook_size;
+                        auto table_address = m_block + m_decoded_length + jmp_size;
 
-                    // The address of the jump instruction in jump table for the current instruction.
-                    auto jmp_instr_address = table_address + (jmp_size * index);
+#ifdef _WIN64
+                        // On x86-64 we have another jump that redirect the target to detour.
+                        table_address += indirect_jump_size;
+#endif
 
-                    // Create a jump table if it is not attached, else get the real address from jump table.
-                    if (!m_attached)
-                    {
-                        block_writer->write_jump(instr.disp.absolute_address);
-                        instr.disp.absolute_address = reinterpret_cast<uintptr_t>(jmp_instr_address);
-                    }
-                    else
-                    {
-                        instr.disp.absolute_address = *reinterpret_cast<uintptr_t*>(jmp_instr_address + jmp_instr_size);
+                        // The address of the jump instruction in jump table for the current instruction.
+                        auto jmp_instr_address = table_address + (jmp_size * index);
+
+                        // Create a jump table if it is not attached, else get the real address from jump table.
+                        if (!m_attached)
+                        {
+#ifdef _WIN64
+                            block_writer->write_indirect_jump(instr.disp.absolute_address);
+#else
+                            block_writer->write_relative_jump(instr.disp.absolute_address);
+#endif
+
+                            instr.disp.absolute_address = reinterpret_cast<uintptr_t>(jmp_instr_address);
+                        }
+                        else
+                        {
+                            instr.disp.absolute_address = *reinterpret_cast<uintptr_t*>(jmp_instr_address + jmp_instr_size);
 
 #ifndef _WIN64
-                        // On x86 we have a displacement instead of absolute address.
-                        instr.disp.absolute_address += reinterpret_cast<uintptr_t>(jmp_instr_address) + jmp_size;
+                            // On x86 we have a displacement instead of absolute address.
+                            instr.disp.absolute_address += reinterpret_cast<uintptr_t>(jmp_instr_address) + jmp_size;
 #endif
+                        }
                     }
 
                     switch (instr.disp.size)
                     {
                         case 8:
                         {
-                            *reinterpret_cast<int8_t*>(disp_address) = static_cast<int8_t>(utils::calculate_displacement(instr_address, instr.disp.absolute_address, instr.decoded.length));
+                            *reinterpret_cast<int8_t*>(disp_address) = static_cast<int8_t>(utils::calculate_displacement(instr_address, instr.disp.absolute_address, instr.length));
                             break;
                         }
                         case 16:
                         {
-                            *reinterpret_cast<int16_t*>(disp_address) = static_cast<int16_t>(utils::calculate_displacement(instr_address, instr.disp.absolute_address, instr.decoded.length));
+                            *reinterpret_cast<int16_t*>(disp_address) = static_cast<int16_t>(utils::calculate_displacement(instr_address, instr.disp.absolute_address, instr.length));
                             break;
                         }
                         case 32:
                         {
-                            *reinterpret_cast<int32_t*>(disp_address) = static_cast<int32_t>(utils::calculate_displacement(instr_address, instr.disp.absolute_address, instr.decoded.length));
+                            *reinterpret_cast<int32_t*>(disp_address) = static_cast<int32_t>(utils::calculate_displacement(instr_address, instr.disp.absolute_address, instr.length));
+                            break;
+                        }
+                        case 64:
+                        {
+                            *reinterpret_cast<int64_t*>(disp_address) = static_cast<int64_t>(utils::calculate_displacement(instr_address, instr.disp.absolute_address, instr.length));
                             break;
                         }
                     }
@@ -431,7 +489,7 @@ namespace renhook
                     index++;
                 }
 
-                instr_address += instr.decoded.length;
+                instr_address += instr.length;
             }
         }
 

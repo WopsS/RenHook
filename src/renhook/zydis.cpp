@@ -1,5 +1,4 @@
 #include <renhook/zydis.hpp>
-
 #include <renhook/exception.hpp>
 
 ZydisDecoder renhook::zydis::m_decoder;
@@ -24,49 +23,73 @@ renhook::zydis::zydis()
     }
 }
 
-std::vector<renhook::zydis::instruction> renhook::zydis::decode(uintptr_t address, size_t length, size_t minimum_decoded_length, size_t& decoded_length)
+const renhook::zydis::decoded_info renhook::zydis::decode(uintptr_t address, size_t length, size_t minimum_decoded_length, size_t& decoded_length) const
 {
-    std::vector<zydis::instruction> instructions;
+    decoded_info info;
+    info.lowest_relative_address = -1;
+    info.highest_relative_address = 0;
 
     decoded_length = 0;
     while (decoded_length < minimum_decoded_length)
     {
-        zydis::instruction instr;
-        auto instr_address = address + decoded_length;
+        ZydisDecodedInstruction decoded_instruction;
+        auto instruction_address = address + decoded_length;
 
-        auto status = ZydisDecoderDecodeBuffer(&m_decoder, reinterpret_cast<void*>(instr_address), length, &instr.decoded);
+        auto status = ZydisDecoderDecodeBuffer(&m_decoder, reinterpret_cast<void*>(instruction_address), length, &decoded_instruction);
         if (!ZYAN_SUCCESS(status))
         {
             break;
         }
 
-        instr.is_relative = instr.decoded.attributes & ZYDIS_ATTRIB_IS_RELATIVE;
+        decoded_info::instruction instruction;
+        instruction.length = decoded_instruction.length;
+        instruction.is_relative = decoded_instruction.attributes & ZYDIS_ATTRIB_IS_RELATIVE;
 
-        for (size_t i = 0; i < instr.decoded.operand_count; i++)
+        // Calculate the absolute address if it is relative.
+        if (instruction.is_relative)
         {
-            auto op = instr.decoded.operands[i];
-            if (op.type == ZYDIS_OPERAND_TYPE_IMMEDIATE && op.imm.is_relative)
-            {
-                ZydisCalcAbsoluteAddress(&instr.decoded, &op, instr_address, reinterpret_cast<uint64_t*>(&instr.disp.absolute_address));
-                instr.disp.offset = instr.decoded.raw.imm[0].offset;
-                instr.disp.size = instr.decoded.raw.imm[0].size;
+            get_absolute_address(instruction_address, decoded_instruction, instruction.disp);
 
-                break;
-            }
-            else if (op.type == ZYDIS_OPERAND_TYPE_MEMORY && op.mem.disp.has_displacement && op.mem.index == ZYDIS_REGISTER_NONE &&
-                    (op.mem.base == ZYDIS_REGISTER_NONE || op.mem.base == ZYDIS_REGISTER_EIP || op.mem.base == ZYDIS_REGISTER_RIP))
+            if (instruction.disp.absolute_address < info.lowest_relative_address)
             {
-                ZydisCalcAbsoluteAddress(&instr.decoded, &op, instr_address, reinterpret_cast<uint64_t*>(&instr.disp.absolute_address));
-                instr.disp.offset = instr.decoded.raw.disp.offset;
-                instr.disp.size = instr.decoded.raw.disp.size;
-
-                break;
+                info.lowest_relative_address = instruction.disp.absolute_address;
             }
+
+            if (instruction.disp.absolute_address > info.highest_relative_address)
+            {
+                info.highest_relative_address = instruction.disp.absolute_address;
+            }
+
+            instruction.add_to_jump_table = (decoded_instruction.opcode & 0xF0) == 0x70 ||
+                                            (decoded_instruction.opcode_map == ZYDIS_OPCODE_MAP_0F && (decoded_instruction.opcode & 0xF0) == 0x80) ||
+                                            decoded_instruction.mnemonic == ZYDIS_MNEMONIC_CALL;
+        }
+        else
+        {
+            instruction.disp.absolute_address = 0;
+            instruction.disp.offset = 0;
+            instruction.disp.size = 0;
         }
 
-        instructions.emplace_back(std::move(instr));
-        decoded_length += instr.decoded.length;
+        info.instructions.emplace_back(std::move(instruction));
+        decoded_length += decoded_instruction.length;
     }
 
-    return instructions;
+    return info;
+}
+
+void renhook::zydis::get_absolute_address(uintptr_t instr_address, const ZydisDecodedInstruction& decoded_instr, decoded_info::instruction::displacement& displacement) const
+{
+    if (decoded_instr.raw.imm[0].is_relative)
+    {
+        displacement.absolute_address = instr_address + decoded_instr.length + static_cast<int32_t>(decoded_instr.raw.imm[0].value.s);
+        displacement.offset = decoded_instr.raw.imm[0].offset;
+        displacement.size = decoded_instr.raw.imm[0].size;
+    }
+    else if ((decoded_instr.attributes & ZYDIS_ATTRIB_HAS_MODRM) && decoded_instr.raw.modrm.mod == 0 && decoded_instr.raw.modrm.rm == 5)
+    {
+        displacement.absolute_address = instr_address + decoded_instr.length + static_cast<int32_t>(decoded_instr.raw.disp.value);
+        displacement.offset = decoded_instr.raw.disp.offset;
+        displacement.size = decoded_instr.raw.disp.size;
+    }
 }

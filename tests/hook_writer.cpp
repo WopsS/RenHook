@@ -29,32 +29,37 @@ bool compare_memory(const uint8_t* memory, std::vector<uint8_t> bytes)
 
 TEST_CASE("hook_writer")
 {
-    uint8_t bytes[32];
-    uint8_t copy_bytes[] = { 0x01, 0xFF, 0x32, 0x90, 0x45 };
+    uint8_t bytes[64];
+    uint8_t copy_bytes[] = { 0x57, 0x56, 0x55, 0x90, 0x90 };
+
+#ifdef _WIN64
+    size_t relative_jump_index = 19;
+#else
+    size_t relative_jump_index = 5;
+#endif
 
     renhook::hook_writer writer(bytes);
-
     writer.copy_from(copy_bytes, sizeof(copy_bytes));
-    writer.write_jump(0);
+
+#ifdef _WIN64
+    writer.write_indirect_jump(0);
+#endif
+
+    writer.write_relative_jump(reinterpret_cast<uintptr_t>(&bytes[relative_jump_index] + 5 - 0x30));
     writer.write_nops(5);
 
     std::vector<uint8_t> expected_bytes =
     {
-        0x01, 0xFF, 0x32, 0x90, 0x45,
+        0x57, 0x56, 0x55, 0x90, 0x90,
 
 #ifdef _WIN64
         0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-#else
-        0xE9, 0x00, 0x00, 0x00, 0x00,
 #endif
 
+        0xE9, 0xD0, 0xFF, 0xFF, 0xFF,
         0x90, 0x90, 0x90, 0x90, 0x90
     };
-
-#ifndef _WIN64
-    *(reinterpret_cast<uintptr_t*>(&expected_bytes[6])) = renhook::utils::calculate_displacement(reinterpret_cast<uintptr_t>(&bytes[5]), 0, 5);
-#endif
 
     REQUIRE(compare_memory(bytes, expected_bytes));
 }

@@ -62,7 +62,7 @@ TEST_CASE("hooks::inline_hook", "[hooks][inline_hook]")
             0x8D, 0x85, 0xE8, 0x03, 0x00, 0x00, // lea r8, [rbp+3C0h+arg_1]
             0x8D, 0x54, 0x24, 0x50,             // lea rdx, [rsp+4C0h+var_2]
             0x8B, 0xC8,                         // mov rcx, rax
-            0xE8, 0x00, 0x00, 0x00, 0x00        // call [rip+0x00]                     
+            0xE8, 0x00, 0x00, 0x00, 0x00        // call 0x00000000                    
         };
 
 #ifndef _WIN64
@@ -77,12 +77,7 @@ TEST_CASE("hooks::inline_hook", "[hooks][inline_hook]")
         std::vector<uint8_t> expected_block_bytes =
         {
             0x57,
-            0x8D, 0x85, 0xE8, 0x03, 0x00, 0x00,
-
-#ifdef _WIN64
-            0x8D, 0x54, 0x24, 0x50,
-            0x8B, 0xC8  
-#endif
+            0x8D, 0x85, 0xE8, 0x03, 0x00, 0x00
         };
 
         REQUIRE(compare_memory(block, expected_block_bytes));
@@ -128,9 +123,11 @@ TEST_CASE("hooks::inline_hook", "[hooks][inline_hook]")
             std::vector<uint8_t> expected_data_bytes =
             {
 #ifdef _WIN64
-                0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,
-                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                0x90,
+                0xE9, 0x00, 0x00, 0x00, 0x00,
+                0x57,
+                0x48, 0x83, 0xEC, 0x20,
+                0x48, 0x8B, 0xD9,
+                0x33, 0xFF,
                 0x48, 0x83, 0xC1, 0x08,
                 0x48, 0x89, 0x79, 0xF8
 #else
@@ -143,23 +140,20 @@ TEST_CASE("hooks::inline_hook", "[hooks][inline_hook]")
             {
 #ifdef _WIN64
                 0x48, 0x89, 0x5C, 0x24, 0x08,
-                0x57,
-                0x48, 0x83, 0xEC, 0x20,
-                0x48, 0x8B, 0xD9,
-                0x33, 0xFF,
                 0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,
                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 #else
                 0x89, 0x54, 0x24, 0x08,
                 0x57,
-                0xE9, 0x00, 0x00, 0x00, 0x00,
+                0xE9, 0x00, 0x00, 0x00, 0x00
 #endif
             };
 
 #ifdef _WIN64
-            *(reinterpret_cast<uintptr_t*>(&expected_block_bytes[21])) = reinterpret_cast<uintptr_t>(&data[15]);
+            *(reinterpret_cast<int32_t*>(&expected_data_bytes[1])) = static_cast<int32_t>(renhook::utils::calculate_displacement(reinterpret_cast<uintptr_t>(&data), reinterpret_cast<uintptr_t>(block + 5 + hook_t<void_func_t>::indirect_jump_size), 5));
+            *(reinterpret_cast<uintptr_t*>(&expected_block_bytes[11])) = reinterpret_cast<uintptr_t>(&data[5]);
 #else
-            *(reinterpret_cast<int32_t*>(&expected_data_bytes[1])) = renhook::utils::calculate_displacement(reinterpret_cast<uintptr_t>(&data), 0, 5);
+            *(reinterpret_cast<int32_t*>(&expected_data_bytes[1])) = static_cast<int32_t>(renhook::utils::calculate_displacement(reinterpret_cast<uintptr_t>(&data), 0, 5));
             *(reinterpret_cast<int32_t*>(&expected_block_bytes[6])) = renhook::utils::calculate_displacement(reinterpret_cast<uintptr_t>(block + 5), reinterpret_cast<uintptr_t>(&data[5]), 5);
 #endif
 
@@ -192,17 +186,17 @@ TEST_CASE("hooks::inline_hook", "[hooks][inline_hook]")
             uint8_t data[] =
             {
                 0x57,                               // push edi / rdi
-                0x74, 0x60,                         // jz [rip+0x60]
-                0x0F, 0x84, 0x60, 0x00, 0x00, 0x00, // jz [rip+0x60]
+                0x74, 0x60,                         // jz 0x60
+                0x0F, 0x84, 0x80, 0xFF, 0xFF, 0xFF, // jz 0xFFFFFF80
                 0x8D, 0x85, 0xE8, 0x03, 0x00, 0x00, // lea r8, [rbp+3C0h+arg_1]
                 0x8D, 0x54, 0x24, 0x50,             // lea rdx, [rsp+4C0h+var_2]
                 0x8B, 0xC8,                         // mov rcx, rax
-                0xE8, 0x97, 0x05, 0xD0, 0x00,       // call sub_140D01890
+                0xE8, 0x97, 0x05, 0xD0, 0x00,       // call 0x00D0059C
                 0x8B, 0xC8                          // mov rcx, rax
             };
 
             auto first_jump_real_addr = reinterpret_cast<uintptr_t>(&data[1]) + data[2] + 2;
-            auto second_jump_real_addr = reinterpret_cast<uintptr_t>(&data[3]) + data[5] + 6;
+            auto second_jump_real_addr = reinterpret_cast<uintptr_t>(&data[3]) + *reinterpret_cast<int32_t*>(&data[5]) + 6;
 
             hook_t<void_func_t> hook(reinterpret_cast<uintptr_t>(&data), static_cast<uintptr_t>(0));
             hook.attach();
@@ -210,16 +204,9 @@ TEST_CASE("hooks::inline_hook", "[hooks][inline_hook]")
             auto block = hook.get_block_address();
             std::vector<uint8_t> expected_data_bytes =
             {
-#ifdef _WIN64
-                0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,
-                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                0x90,
-                0x8D, 0x54, 0x24, 0x50
-#else
                 0xE9, 0x00, 0x00, 0x00, 0x00,
                 0x90, 0x90, 0x90, 0x90,
                 0x8D, 0x85, 0xE8, 0x03, 0x00, 0x00
-#endif
             };
 
             std::vector<uint8_t> expected_block_bytes =
@@ -229,47 +216,41 @@ TEST_CASE("hooks::inline_hook", "[hooks][inline_hook]")
                 0x0F, 0x84, 0x00, 0x00, 0x00, 0x00,
 
 #ifdef _WIN64
-                0x8D, 0x85, 0xE8, 0x03, 0x00, 0x00,
-
                 // Return to function jump.
                 0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,
                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 
-                // First jump.
+                // Indirect jump to detour.
                 0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,
                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 
-                // Second jump.
+                // First item in jump table (for the 2 bytes jump).
                 0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,
-                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 #else
                 // Return to function jump.
                 0xE9, 0x00, 0x00, 0x00, 0x00,
 
-                // First jump.
-                0xE9, 0x00, 0x00, 0x00, 0x00,
-
-                // Second jump.
+                // First item in jump table (for the 2 bytes jump).
                 0xE9, 0x00, 0x00, 0x00, 0x00,
 #endif
             };
 
 #ifdef _WIN64
-            *(reinterpret_cast<int8_t*>(&expected_block_bytes[2])) = static_cast<int8_t>(renhook::utils::calculate_displacement(reinterpret_cast<uintptr_t>(&data[1]), reinterpret_cast<uintptr_t>(&data[0] + 29), 2));
-            *(reinterpret_cast<int32_t*>(&expected_block_bytes[5])) = static_cast<int32_t>(renhook::utils::calculate_displacement(reinterpret_cast<uintptr_t>(&data[3]), reinterpret_cast<uintptr_t>(&data[0] + 43), 6));
+            *(reinterpret_cast<int32_t*>(&expected_data_bytes[1])) = static_cast<int32_t>(renhook::utils::calculate_displacement(reinterpret_cast<uintptr_t>(&data), reinterpret_cast<uintptr_t>(block + 9 + hook_t<void_func_t>::indirect_jump_size), 5));
 
-            *(reinterpret_cast<uintptr_t*>(&expected_block_bytes[21])) = reinterpret_cast<uintptr_t>(&data[15]);
-            *(reinterpret_cast<uintptr_t*>(&expected_block_bytes[35])) = first_jump_real_addr;
-            *(reinterpret_cast<uintptr_t*>(&expected_block_bytes[49])) = second_jump_real_addr;
+            *(reinterpret_cast<int8_t*>(&expected_block_bytes[2])) = static_cast<int8_t>(renhook::utils::calculate_displacement(reinterpret_cast<uintptr_t>(&data[1]), reinterpret_cast<uintptr_t>(&data[0] + 37), 2));
+            *(reinterpret_cast<uintptr_t*>(&expected_block_bytes[15])) = reinterpret_cast<uintptr_t>(&data[9]);
+            *(reinterpret_cast<uintptr_t*>(&expected_block_bytes[43])) = first_jump_real_addr;
+            *(reinterpret_cast<int32_t*>(&expected_block_bytes[5])) = static_cast<int32_t>(renhook::utils::calculate_displacement(reinterpret_cast<uintptr_t>(block + 3), second_jump_real_addr, 6));
 #else
-            *(reinterpret_cast<int32_t*>(&expected_data_bytes[1])) = renhook::utils::calculate_displacement(reinterpret_cast<int32_t>(&data), 0, 5);
+            *(reinterpret_cast<int32_t*>(&expected_data_bytes[1])) = static_cast<int32_t>(renhook::utils::calculate_displacement(reinterpret_cast<uintptr_t>(&data), 0, 5));
 
             *(reinterpret_cast<int8_t*>(&expected_block_bytes[2])) = static_cast<int8_t>(renhook::utils::calculate_displacement(reinterpret_cast<uintptr_t>(&data[1]), reinterpret_cast<uintptr_t>(&data[0] + 14), 2));
             *(reinterpret_cast<int32_t*>(&expected_block_bytes[5])) = renhook::utils::calculate_displacement(reinterpret_cast<uintptr_t>(&data[3]), reinterpret_cast<uintptr_t>(&data[0] + 19), 6);
-
             *(reinterpret_cast<int32_t*>(&expected_block_bytes[10])) = renhook::utils::calculate_displacement(reinterpret_cast<uintptr_t>(block + 9), reinterpret_cast<uintptr_t>(&data[9]), 5);
             *(reinterpret_cast<int32_t*>(&expected_block_bytes[15])) = renhook::utils::calculate_displacement(reinterpret_cast<uintptr_t>(block + 14), first_jump_real_addr, 5);
-            *(reinterpret_cast<int32_t*>(&expected_block_bytes[20])) = renhook::utils::calculate_displacement(reinterpret_cast<uintptr_t>(block + 19), second_jump_real_addr, 5);
+            *(reinterpret_cast<int32_t*>(&expected_block_bytes[5])) = renhook::utils::calculate_displacement(reinterpret_cast<uintptr_t>(block + 3), second_jump_real_addr, 6);
 #endif
 
             REQUIRE(compare_memory(data, expected_data_bytes));
@@ -281,7 +262,7 @@ TEST_CASE("hooks::inline_hook", "[hooks][inline_hook]")
             {
                 0x57,
                 0x74, 0x60,
-                0x0F, 0x84, 0x60, 0x00, 0x00, 0x00,
+                0x0F, 0x84, 0x80, 0xFF, 0xFF, 0xFF,
                 0x8D, 0x85, 0xE8, 0x03, 0x00, 0x00,
                 0x8D, 0x54, 0x24, 0x50
             };

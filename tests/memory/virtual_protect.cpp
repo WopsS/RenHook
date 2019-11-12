@@ -9,13 +9,13 @@ constexpr size_t allocation_size = 0x10000;
 
 uint32_t get_memory_protection(void* address)
 {
-    MEMORY_BASIC_INFORMATION memoryInfo = { 0 };
-    if (!VirtualQuery(address, &memoryInfo, sizeof(memoryInfo)))
+    MEMORY_BASIC_INFORMATION memory_info = { 0 };
+    if (!VirtualQuery(address, &memory_info, sizeof(memory_info)))
     {
         throw renhook::exception("retrieving information about memory failed", GetLastError());
     }
 
-    return memoryInfo.Protect;
+    return memory_info.Protect;
 }
 
 TEST_CASE("memory::virtual_protect", "[memory][protection]")

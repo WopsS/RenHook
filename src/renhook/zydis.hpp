@@ -13,18 +13,34 @@ namespace renhook
     {
     public:
 
-        struct instruction
+        struct decoded_info
         {
-            ZydisDecodedInstruction decoded;
-
-            bool is_relative;
-
-            struct _disp
+            struct instruction
             {
-                uintptr_t absolute_address;
-                uint8_t offset;
-                uint8_t size;
-            } disp;
+                struct displacement
+                {
+                    uintptr_t absolute_address;
+                    uint8_t offset;
+
+                    
+                    /**
+                    * @brief The size of displacement in bits.
+                    */
+                    uint8_t size;
+                };
+
+                uint8_t length;
+
+                bool is_relative;
+                bool add_to_jump_table;
+
+                displacement disp;
+            };
+
+            std::vector<instruction> instructions;
+
+            uintptr_t lowest_relative_address;
+            uintptr_t highest_relative_address;
         };
 
         zydis();
@@ -38,11 +54,13 @@ namespace renhook
          * @param minimum_decoded_length[in]    The minimum length of decoded instructions.
          * @param decoded_length[out]           The actual decoded length.
          *
-         * @return An array of decoded instructions.
+         * @return A structure containing the decoded information.
          */
-        std::vector<zydis::instruction> decode(uintptr_t address, size_t length, size_t minimum_decoded_length, size_t& decoded_length);
+        const decoded_info decode(uintptr_t address, size_t length, size_t minimum_decoded_length, size_t& decoded_length) const;
 
     private:
+
+        void get_absolute_address(uintptr_t instr_address, const ZydisDecodedInstruction& decoded_instr, decoded_info::instruction::displacement& displacement) const;
 
         static ZydisDecoder m_decoder;
         static bool m_initialized;

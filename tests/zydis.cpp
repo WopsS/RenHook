@@ -32,33 +32,33 @@ TEST_CASE("zydis")
     size_t decoded_length;
 
     renhook::zydis zydis;
-    auto instructions = zydis.decode(reinterpret_cast<uintptr_t>(&data), sizeof(data), 5, decoded_length);
+    auto decoded_info = zydis.decode(reinterpret_cast<uintptr_t>(&data), sizeof(data), 5, decoded_length);
 
 #ifdef _WIN64
     REQUIRE(decoded_length == 5);
-    REQUIRE(instructions.size() == 1);
+    REQUIRE(decoded_info.instructions.size() == 1);
 
-    instructions = zydis.decode(reinterpret_cast<uintptr_t>(&data), sizeof(data), 16, decoded_length);
+    decoded_info = zydis.decode(reinterpret_cast<uintptr_t>(&data), sizeof(data), 16, decoded_length);
 
     REQUIRE(decoded_length == 19);
-    REQUIRE(instructions.size() == 6);
+    REQUIRE(decoded_info.instructions.size() == 6);
 
-    instructions = zydis.decode(reinterpret_cast<uintptr_t>(&data), sizeof(data), 32, decoded_length);
+    decoded_info = zydis.decode(reinterpret_cast<uintptr_t>(&data), sizeof(data), 32, decoded_length);
 
     REQUIRE(decoded_length == 35);
-    REQUIRE(instructions.size() == 9);
+    REQUIRE(decoded_info.instructions.size() == 9);
 #else
     REQUIRE(decoded_length == 5);
-    REQUIRE(instructions.size() == 2);
+    REQUIRE(decoded_info.instructions.size() == 2);
 
-    instructions = zydis.decode(reinterpret_cast<uintptr_t>(&data), sizeof(data), 14, decoded_length);
+    decoded_info = zydis.decode(reinterpret_cast<uintptr_t>(&data), sizeof(data), 14, decoded_length);
 
     REQUIRE(decoded_length == 15);
-    REQUIRE(instructions.size() == 6);
+    REQUIRE(decoded_info.instructions.size() == 6);
 
-    instructions = zydis.decode(reinterpret_cast<uintptr_t>(&data), sizeof(data), 29, decoded_length);
+    decoded_info = zydis.decode(reinterpret_cast<uintptr_t>(&data), sizeof(data), 29, decoded_length);
 
     REQUIRE(decoded_length == 29);
-    REQUIRE(instructions.size() == 9);
+    REQUIRE(decoded_info.instructions.size() == 9);
 #endif
 }

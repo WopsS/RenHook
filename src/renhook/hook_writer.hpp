@@ -20,7 +20,7 @@ namespace renhook
         hook_writer(uint8_t* address);
 
         /**
-         * @copydoc renhook::hook_writer::hook_writer(uint8_t*,)
+         * @copydoc renhook::hook_writer::hook_writer(uint8_t*)
          */
         hook_writer(uintptr_t address);
 
@@ -39,12 +39,21 @@ namespace renhook
          */
         void copy_from(uintptr_t address, size_t length);
 
+#ifdef _WIN64
         /**
-         * @brief Write a 5 bytes (on x86) or 14 bytes (on x86-64) jump to #target_address.
+         * @brief Write an indirect (14 bytes) jump to #target_address.
          *
          * @param target_address[in] The address where the jump is.
          */
-        void write_jump(uintptr_t target_address);
+        void write_indirect_jump(uintptr_t target_address);
+#endif
+
+        /**
+         * @brief Write a relative (5 bytes) jump to #target_address.
+         *
+         * @param target_address[in] The address where the jump is.
+         */
+        void write_relative_jump(uintptr_t target_address);
 
         /**
          * @brief Write NOP.

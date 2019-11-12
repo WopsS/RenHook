@@ -6,15 +6,23 @@
 #include <renhook/memory/utils.hpp>
 #include <renhook/memory/virtual_protect.hpp>
 
-renhook::memory::memory_allocator global_allocator;
+namespace renhook
+{
+    namespace memory
+    {
+        renhook::memory::memory_allocator global_allocator;
+    }
+}
 
 renhook::memory::memory_allocator::memory_allocator() noexcept
     : m_regions(nullptr)
 {
-    SYSTEM_INFO system_info;
+    SYSTEM_INFO system_info = { 0 };
     GetSystemInfo(&system_info);
 
     m_region_size = system_info.dwAllocationGranularity;
+    m_minimum_address = reinterpret_cast<uintptr_t>(system_info.lpMinimumApplicationAddress);
+    m_maximum_address = reinterpret_cast<uintptr_t>(system_info.lpMaximumApplicationAddress);
 }
 
 renhook::memory::memory_allocator::~memory_allocator() noexcept
@@ -28,18 +36,30 @@ renhook::memory::memory_allocator::~memory_allocator() noexcept
     }
 }
 
-void* renhook::memory::memory_allocator::alloc()
+void* renhook::memory::memory_allocator::alloc(uintptr_t lower_bound, uintptr_t upper_bound)
 {
+    if (lower_bound < m_minimum_address)
+    {
+        lower_bound = m_minimum_address;
+    }
+
+    if (upper_bound > m_maximum_address)
+    {
+        upper_bound = m_maximum_address;
+    }
+
     std::lock_guard<std::mutex> _(m_mutex);
 
     auto region = m_regions;
     if (!region)
     {
-        region = alloc_region();
+        region = alloc_region(lower_bound, upper_bound);
     }
 
+    auto region_address = reinterpret_cast<uintptr_t>(region);
+
     // If the region doesn't have a free block, check all regions.
-    if (region->free_blocks == 0)
+    if (region->free_blocks == 0 || !is_region_in_range(region_address, lower_bound, upper_bound))
     {
         region = region->next;
         while (region)
@@ -47,7 +67,11 @@ void* renhook::memory::memory_allocator::alloc()
             // Stop if we find a region with a free block.
             if (region->free_blocks > 0)
             {
-                break;
+                region_address = reinterpret_cast<uintptr_t>(region);
+                if (is_region_in_range(region_address, lower_bound, upper_bound))
+                {
+                    break;
+                }
             }
 
             region = region->next;
@@ -56,7 +80,7 @@ void* renhook::memory::memory_allocator::alloc()
         // No region found? Then allocate a new one.
         if (!region)
         {
-            region = alloc_region();
+            region = alloc_region(lower_bound, upper_bound);
         }
     }
 
@@ -111,12 +135,47 @@ void renhook::memory::memory_allocator::free(void* address)
     }
 }
 
-renhook::memory::memory_allocator::regionptr_t renhook::memory::memory_allocator::alloc_region()
+renhook::memory::memory_allocator::regionptr_t renhook::memory::memory_allocator::alloc_region(uintptr_t lower_bound, uintptr_t upper_bound)
 {
-    auto region = static_cast<regionptr_t>(VirtualAlloc(nullptr, m_region_size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE));
+    auto middle = (lower_bound + upper_bound) / 2;
+    auto alloc_address_lower = utils::align_down(middle, m_region_size);
+    auto alloc_address_higher = utils::align_up(middle, m_region_size);
+
+    regionptr_t region = nullptr;
+
+    bool is_lower_in_range = false;
+    bool is_upper_in_range = false;
+
+    do
+    {
+        is_lower_in_range = is_region_in_range(alloc_address_lower, lower_bound, upper_bound);
+        if (is_lower_in_range)
+        {
+            region = try_alloc_region_at_address(alloc_address_lower);
+            if (region)
+            {
+                break;
+            }
+
+            alloc_address_lower -= m_region_size;
+        }
+
+        is_upper_in_range = is_region_in_range(alloc_address_higher, lower_bound, upper_bound);
+        if (is_upper_in_range)
+        {
+            region = try_alloc_region_at_address(alloc_address_higher);
+            if (region)
+            {
+                break;
+            }
+
+            alloc_address_higher += m_region_size;
+        }
+    } while (is_lower_in_range || is_upper_in_range);
+
     if (!region)
     {
-        throw renhook::exception("region allocation failed", GetLastError());
+        throw renhook::exception("no free region found", GetLastError());
     }
 
 #ifdef _DEBUG
@@ -148,4 +207,29 @@ renhook::memory::memory_allocator::regionptr_t renhook::memory::memory_allocator
 
     virtual_protect protection(region, m_region_size, protection::read | protection::execute, true);
     return region;
+}
+
+renhook::memory::memory_allocator::regionptr_t renhook::memory::memory_allocator::try_alloc_region_at_address(uintptr_t address)
+{
+    MEMORY_BASIC_INFORMATION memory_info = { 0 };
+    if (!VirtualQuery(reinterpret_cast<void*>(address), &memory_info, sizeof(memory_info)))
+    {
+        throw renhook::exception("cannot retrieves region information", GetLastError());
+    }
+
+    if (memory_info.State == MEM_FREE && memory_info.RegionSize >= m_region_size)
+    {
+        auto result = static_cast<regionptr_t>(VirtualAlloc(memory_info.BaseAddress, m_region_size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE));
+        if (result)
+        {
+            return result;
+        }
+    }
+
+    return nullptr;
+}
+
+bool renhook::memory::memory_allocator::is_region_in_range(uintptr_t address, uintptr_t lower_bound, uintptr_t upper_bound)
+{
+    return address >= lower_bound && address < upper_bound;
 }
