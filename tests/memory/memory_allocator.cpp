@@ -29,18 +29,18 @@ TEST_CASE("memory::memory_allocator", "[memory][memory_allocator]")
     block_a[0] = '1';
     block_a[255] = '1';
 
-    auto block_b = allocator.alloc(minimum_address + 0x10000, minimum_address + 0x20000);
+    auto block_b = allocator.alloc(minimum_address + 0x10000, maximum_address / 2);
     REQUIRE(block_b != nullptr);
 
-    auto block_c = allocator.alloc(minimum_address + 0x10000, minimum_address + 0x10500);
+    auto block_c = allocator.alloc(minimum_address + 0x10000, maximum_address / 2 + 0x500);
     REQUIRE(block_c != nullptr);
 
     size_t diff = std::abs(reinterpret_cast<intptr_t>(block_c) - reinterpret_cast<intptr_t>(block_b));
     REQUIRE(diff < region_size);
 
-    REQUIRE_THROWS(allocator.alloc(minimum_address + 0x10500, minimum_address + 0x20000));
+    REQUIRE_THROWS(allocator.alloc(minimum_address + 0x10500, maximum_address / 2));
 
-    auto block_d = allocator.alloc(minimum_address + 0x30000, maximum_address);
+    auto block_d = allocator.alloc(maximum_address / 2 + 0x100, maximum_address);
     REQUIRE(block_d != nullptr);
 
     diff = std::abs(reinterpret_cast<intptr_t>(block_d) - reinterpret_cast<intptr_t>(block_b));
