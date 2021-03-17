@@ -270,7 +270,7 @@ namespace renhook
                 lower_bound -= two_gb_in_bytes;
             }
 
-            if (upper_bound < max_pointer_address)
+            if (upper_bound < max_upper_bound_memory)
             {
                 upper_bound += two_gb_in_bytes;
             }
