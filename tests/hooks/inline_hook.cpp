@@ -4,20 +4,7 @@
 #include <renhook/hooks/inline_hook.hpp>
 
 template<typename T>
-class inline_hook_ex : public renhook::inline_hook<T>
-{
-public:
-
-    using renhook::inline_hook<T>::inline_hook;
-
-    const uint8_t* get_block_address() const
-    {
-        return renhook::inline_hook<T>::get_block_address();
-    }
-};
-
-template<typename T>
-using hook_t = inline_hook_ex<T>;
+using hook_t = renhook::inline_hook<T>;
 
 extern renhook::memory::memory_allocator global_allocator;
 extern bool compare_memory(const uint8_t* memory, std::vector<uint8_t> bytes);

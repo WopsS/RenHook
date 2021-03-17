@@ -18,9 +18,6 @@
 #include <renhook/memory/memory_allocator.hpp>
 #include <renhook/memory/virtual_protect.hpp>
 
-#undef min
-#undef max
-
 namespace renhook
 {
     /**
@@ -256,11 +253,11 @@ namespace renhook
             auto decoded_info = zydis.decode(m_target_address, executable::get_code_size(), relative_jump_size, m_decoded_length);
 
             // Find the jump bounds (± 2GB).
-            auto lower_bound = std::min(m_target_address, decoded_info.lowest_relative_address);
-            auto upper_bound = std::max(m_target_address, decoded_info.highest_relative_address);
+            auto lower_bound = (std::min)(m_target_address, decoded_info.lowest_relative_address);
+            auto upper_bound = (std::max)(m_target_address, decoded_info.highest_relative_address);
 
-            constexpr auto two_gb_in_bytes = std::numeric_limits<int32_t>::max();
-            constexpr auto max_pointer_address = std::numeric_limits<uintptr_t>::max();
+            constexpr auto two_gb_in_bytes = (std::numeric_limits<int32_t>::max)();
+            constexpr auto max_pointer_address = (std::numeric_limits<uintptr_t>::max)();
 
             // Used to prevent upper bound overflow.
             constexpr auto max_upper_bound_memory = max_pointer_address - two_gb_in_bytes;
@@ -349,16 +346,22 @@ namespace renhook
             m_attached = false;
         }
 
-    protected:
+        /**
+         * @brief Get the attach status.
+         * 
+         * @return True if the hook is attached, false otherwise.
+        */
+        bool is_attached() const
+        {
+            return m_attached;
+        }
 
         /**
          * @brief Get the block address.
          *
          * @return The block address.
-         *
-         * @note This is only used in tests.
          */
-        const uint8_t* get_block_address() const
+        uint8_t* get_block_address() const
         {
             return m_block;
         }
