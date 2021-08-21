@@ -401,11 +401,22 @@ namespace renhook
                 // Instructions using RIP relative addresses.
                 if ((instr.attributes & ZYDIS_ATTRIB_HAS_MODRM) && instr.raw.modrm.mod == 0 && instr.raw.modrm.rm == 5)
                 {
+#ifdef _WIN64
                     auto absAddr = reinterpret_cast<uintptr_t*>(instr.disp.absolute_address);
                     return skip_jumps(*absAddr);
+#else
+                    return skip_jumps(static_cast<uintptr_t>(instr.raw.disp.value));
+#endif
                 }
 
-                return skip_jumps(instr.disp.absolute_address);
+                if (instr.is_relative)
+                {
+                    return skip_jumps(instr.disp.absolute_address);
+                }
+                else
+                {
+                    throw renhook::exception("jump instruction not handled");
+                }
             }
 
             return address;
