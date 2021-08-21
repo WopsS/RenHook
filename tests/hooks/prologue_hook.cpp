@@ -68,11 +68,6 @@ TEST_CASE("hooks::inline_hook", "[hooks][inline_hook]")
 
 #ifdef _WIN64
         auto data_len = sizeof(data);
-        auto addrFirstJump = &data[data_len - 64];
-        auto addrSecondJump = &data[data_len - 48];
-        auto addrThirdJump = &data[data_len - 32];
-        auto addrFourthJump = &data[data_len - 16];
-
         struct displacements
         {
             uint8_t* source;
