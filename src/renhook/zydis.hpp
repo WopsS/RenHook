@@ -15,7 +15,7 @@ namespace renhook
 
         struct decoded_info
         {
-            struct instruction
+            struct instruction : ZydisDecodedInstruction
             {
                 struct displacement
                 {
@@ -28,8 +28,6 @@ namespace renhook
                     */
                     uint8_t size;
                 };
-
-                uint8_t length;
 
                 bool is_relative;
                 bool add_to_jump_table;

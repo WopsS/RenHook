@@ -382,39 +382,31 @@ namespace renhook
                 return 0;
             }
 
-            auto memory = reinterpret_cast<uint8_t*>(address);
-            if (memory[0] == 0xEB)
-            {
-                // We have a 8-bit offset to the target.
-                address = reinterpret_cast<uintptr_t>(memory + 2 + *reinterpret_cast<int8_t*>(&memory[1]));
-                return skip_jumps(address);
-            }
-            else if (memory[0] == 0xE9)
-            {
-                // We have a 32-bit offset to the target.
-                address = reinterpret_cast<uintptr_t>(memory + 5 + *reinterpret_cast<int32_t*>(&memory[1]));
-                return skip_jumps(address);
-            }
-            else if (memory[0] == 0xFF && memory[1] == 0x25)
-            {
-#ifdef _WIN64
-                // We have a 32bit offset to the target.
-                address = reinterpret_cast<uintptr_t>(memory + 6 + *reinterpret_cast<int32_t*>(&memory[2]));
-#else
-                // We have an absolute pointer.
-                address = *reinterpret_cast<uintptr_t*>(&memory[2]);
-#endif
+            constexpr auto min_decode_length = 2;
+            constexpr auto max_decode_length = 32;
 
-                return skip_jumps(address);
-            }
-#ifdef _WIN64
-            else if (memory[0] == 0x48 && memory[1] == 0xFF && memory[2] == 0x25)
+            size_t decoded_length;
+
+            renhook::zydis zydis;
+            auto decoded_info = zydis.decode(address, max_decode_length, min_decode_length, decoded_length);
+            if (decoded_info.instructions.size() == 0)
             {
-                // We have a 32bit offset to the target.
-                address = reinterpret_cast<uintptr_t>(memory + 7 + *reinterpret_cast<int32_t*>(&memory[3]));
-                return skip_jumps(address);
+                return address;
             }
-#endif
+
+            // JCC and friends not supported.
+            auto& instr = decoded_info.instructions[0];
+            if (instr.mnemonic == ZYDIS_MNEMONIC_JMP)
+            {
+                // Instructions using RIP relative addresses.
+                if ((instr.attributes & ZYDIS_ATTRIB_HAS_MODRM) && instr.raw.modrm.mod == 0 && instr.raw.modrm.rm == 5)
+                {
+                    auto absAddr = reinterpret_cast<uintptr_t*>(instr.disp.absolute_address);
+                    return skip_jumps(*absAddr);
+                }
+
+                return skip_jumps(instr.disp.absolute_address);
+            }
 
             return address;
         }

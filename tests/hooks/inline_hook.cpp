@@ -49,10 +49,62 @@ TEST_CASE("hooks::inline_hook", "[hooks][inline_hook]")
             0x8D, 0x85, 0xE8, 0x03, 0x00, 0x00, // lea r8, [rbp+3C0h+arg_1]
             0x8D, 0x54, 0x24, 0x50,             // lea rdx, [rsp+4C0h+var_2]
             0x8B, 0xC8,                         // mov rcx, rax
-            0xE8, 0x00, 0x00, 0x00, 0x00        // call 0x00000000                    
+            0xE8, 0x00, 0x00, 0x00, 0x00,       // call 0x00000000
+
+            0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
+
+            0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
+
+            0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+            0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
+
+            0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC,
+
+            0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC
         };
 
-#ifndef _WIN64
+#ifdef _WIN64
+        auto data_len = sizeof(data);
+        auto addrFirstJump = &data[data_len - 64];
+        auto addrSecondJump = &data[data_len - 48];
+        auto addrThirdJump = &data[data_len - 32];
+        auto addrFourthJump = &data[data_len - 16];
+
+        struct displacements
+        {
+            uint8_t* source;
+            uint8_t* target;
+            uint8_t* indirect_storage;
+            uint8_t prefix_length;
+
+            displacements(uint8_t* source, uint8_t* target, uint8_t* indirect_storage, uint8_t prefix_length)
+                : source(source)
+                , target(target)
+                , indirect_storage(indirect_storage)
+                , prefix_length(prefix_length)
+            {
+            }
+        };
+
+        std::vector<displacements> disps =
+        {
+            displacements(&data[9], &data[13], &data[data_len - 64], 2),
+            displacements(&data[16], &data[20], &data[data_len - 48], 3),
+            displacements(&data[23], &data[27], &data[data_len - 32], 3),
+            displacements(&data[34], &data[33], &data[data_len - 16], 2)
+        };
+
+        for (auto& disp : disps)
+        {
+            *reinterpret_cast<int64_t*>(disp.indirect_storage) = reinterpret_cast<uintptr_t>(disp.target);
+
+            auto rel_disp = disp.indirect_storage - disp.source - sizeof(int32_t);
+            *reinterpret_cast<int32_t*>(disp.source) = static_cast<int32_t>(rel_disp);
+        }
+#else
         *(reinterpret_cast<uintptr_t*>(&data[9])) = reinterpret_cast<uintptr_t>(&data[13]);
         *(reinterpret_cast<uintptr_t*>(&data[20])) = reinterpret_cast<uintptr_t>(&data[24]);
 #endif

@@ -32,23 +32,21 @@ const renhook::zydis::decoded_info renhook::zydis::decode(uintptr_t address, siz
     decoded_length = 0;
     while (decoded_length < minimum_decoded_length)
     {
-        ZydisDecodedInstruction decoded_instruction;
+        decoded_info::instruction instruction;
         auto instruction_address = address + decoded_length;
 
-        auto status = ZydisDecoderDecodeBuffer(&m_decoder, reinterpret_cast<void*>(instruction_address), length, &decoded_instruction);
+        auto status = ZydisDecoderDecodeBuffer(&m_decoder, reinterpret_cast<void*>(instruction_address), length, &instruction);
         if (!ZYAN_SUCCESS(status))
         {
             break;
         }
 
-        decoded_info::instruction instruction;
-        instruction.length = decoded_instruction.length;
-        instruction.is_relative = decoded_instruction.attributes & ZYDIS_ATTRIB_IS_RELATIVE;
+        instruction.is_relative = instruction.attributes & ZYDIS_ATTRIB_IS_RELATIVE;
 
         // Calculate the absolute address if it is relative.
         if (instruction.is_relative)
         {
-            get_absolute_address(instruction_address, decoded_instruction, instruction.disp);
+            get_absolute_address(instruction_address, instruction, instruction.disp);
 
             if (instruction.disp.absolute_address < info.lowest_relative_address)
             {
@@ -60,9 +58,10 @@ const renhook::zydis::decoded_info renhook::zydis::decode(uintptr_t address, siz
                 info.highest_relative_address = instruction.disp.absolute_address;
             }
 
-            instruction.add_to_jump_table = (decoded_instruction.opcode & 0xF0) == 0x70 ||
-                                            (decoded_instruction.opcode_map == ZYDIS_OPCODE_MAP_0F && (decoded_instruction.opcode & 0xF0) == 0x80) ||
-                                            decoded_instruction.mnemonic == ZYDIS_MNEMONIC_CALL;
+            instruction.add_to_jump_table =
+                (instruction.opcode & 0xF0) == 0x70
+                || (instruction.opcode_map == ZYDIS_OPCODE_MAP_0F && (instruction.opcode & 0xF0) == 0x80)
+                || instruction.mnemonic == ZYDIS_MNEMONIC_CALL;
         }
         else
         {
@@ -72,7 +71,7 @@ const renhook::zydis::decoded_info renhook::zydis::decode(uintptr_t address, siz
         }
 
         info.instructions.emplace_back(std::move(instruction));
-        decoded_length += decoded_instruction.length;
+        decoded_length += instruction.length;
     }
 
     return info;
