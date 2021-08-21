@@ -1,3 +1,3 @@
 #pragma once
 
-#include <renhook/hooks/inline_hook.hpp>
+#include <renhook/hooks/prologue_hook.hpp>

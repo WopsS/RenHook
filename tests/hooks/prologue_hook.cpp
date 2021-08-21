@@ -1,10 +1,10 @@
 #include <catch2/catch.hpp>
 
 #include <renhook/utils.hpp>
-#include <renhook/hooks/inline_hook.hpp>
+#include <renhook/hooks/prologue_hook.hpp>
 
 template<typename T>
-using hook_t = renhook::inline_hook<T>;
+using hook_t = renhook::prologue_hook<T>;
 
 extern renhook::memory::memory_allocator global_allocator;
 extern bool compare_memory(const uint8_t* memory, std::vector<uint8_t> bytes);

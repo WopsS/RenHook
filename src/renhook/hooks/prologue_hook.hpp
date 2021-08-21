@@ -1,5 +1,5 @@
-#ifndef RENHOOK_HOOKS_INLINE_HOOK_H
-#define RENHOOK_HOOKS_INLINE_HOOK_H
+#ifndef RENHOOK_HOOKS_PROLOGUE_HOOK_H
+#define RENHOOK_HOOKS_PROLOGUE_HOOK_H
 
 #include <algorithm>
 #include <limits>
@@ -21,12 +21,12 @@
 namespace renhook
 {
     /**
-     * @brief An inline hook.
+     * @brief A function prologue hook.
      *
      * @tparam T The hooked function type.
      */
     template<typename T>
-    class inline_hook
+    class prologue_hook
     {
     public:
 
@@ -43,7 +43,7 @@ namespace renhook
         /**
          * @brief Construct an empty hook.
          */
-        inline_hook()
+        prologue_hook()
             : m_target_address(0)
             , m_detour_address(0)
             , m_wildcard(0)
@@ -60,8 +60,8 @@ namespace renhook
          * @param target_address[in] The address of the function that will be hooked.
          * @param detour_address[in] The address of the callback.
          */
-        inline_hook(uintptr_t target_address, uintptr_t detour_address)
-            : inline_hook()
+        prologue_hook(uintptr_t target_address, uintptr_t detour_address)
+            : prologue_hook()
         {
             m_target_address = target_address;
             m_detour_address = detour_address;
@@ -73,8 +73,8 @@ namespace renhook
          * @param target_address[in] The address of the function that will be hooked.
          * @param detour_address[in] The address of the callback.
          */
-        inline_hook(uintptr_t target_address, T detour_address)
-            : inline_hook(target_address, reinterpret_cast<uintptr_t>(detour_address))
+        prologue_hook(uintptr_t target_address, T detour_address)
+            : prologue_hook(target_address, reinterpret_cast<uintptr_t>(detour_address))
         {
         }
 
@@ -86,8 +86,8 @@ namespace renhook
          * @param wildcard[in]          The wildcard for #pattern.
          * @param offset[in]            The offset of the #pattern.
          */
-        inline_hook(pattern pattern, uintptr_t detour_address, uint8_t wildcard = 0xCC, size_t offset = 0)
-            : inline_hook()
+        prologue_hook(pattern pattern, uintptr_t detour_address, uint8_t wildcard = 0xCC, size_t offset = 0)
+            : prologue_hook()
         {
             m_detour_address = detour_address;
             m_pattern = std::move(pattern);
@@ -103,8 +103,8 @@ namespace renhook
          * @param wildcard[in]          The wildcard for #pattern.
          * @param offset[in]            The offset of the #pattern.
          */
-        inline_hook(pattern pattern, T detour_address, uint8_t wildcard = 0xCC, size_t offset = 0)
-            : inline_hook(pattern, reinterpret_cast<uintptr_t>(detour_address), wildcard, offset)
+        prologue_hook(pattern pattern, T detour_address, uint8_t wildcard = 0xCC, size_t offset = 0)
+            : prologue_hook(pattern, reinterpret_cast<uintptr_t>(detour_address), wildcard, offset)
         {
         }
 
@@ -117,8 +117,8 @@ namespace renhook
          *
          * @note If the module is not loaded, the library will load it when the hook is attached.
          */
-        inline_hook(const std::string& module, const std::string& function, uintptr_t detour_address)
-            : inline_hook()
+        prologue_hook(const std::string& module, const std::string& function, uintptr_t detour_address)
+            : prologue_hook()
         {
             m_module = module;
             m_function = function;
@@ -134,12 +134,12 @@ namespace renhook
          *
          * @note If the module is not loaded, the library will load it when the hook is attached.
          */
-        inline_hook(const std::string& module, const std::string& function, T detour_address)
-            : inline_hook(module, function, reinterpret_cast<uintptr_t>(detour_address))
+        prologue_hook(const std::string& module, const std::string& function, T detour_address)
+            : prologue_hook(module, function, reinterpret_cast<uintptr_t>(detour_address))
         {
         }
 
-        inline_hook(inline_hook&& rhs) noexcept
+        prologue_hook(prologue_hook&& rhs) noexcept
             : m_target_address(rhs.m_target_address)
             , m_detour_address(rhs.m_detour_address)
             , m_pattern(std::move(rhs.m_pattern))
@@ -153,7 +153,7 @@ namespace renhook
             rhs.m_block = nullptr;
         }
 
-        ~inline_hook()
+        ~prologue_hook()
         {
             if (m_attached)
             {
@@ -172,7 +172,7 @@ namespace renhook
             }
         }
 
-        inline_hook& operator=(inline_hook&& rhs) noexcept
+        prologue_hook& operator=(prologue_hook&& rhs) noexcept
         {
             m_target_address = rhs.m_target_address;
             m_detour_address = rhs.m_detour_address;
@@ -189,8 +189,8 @@ namespace renhook
             return *this;
         }
 
-        inline_hook(inline_hook&) = delete;
-        inline_hook& operator=(const inline_hook&) = delete;
+        prologue_hook(prologue_hook&) = delete;
+        prologue_hook& operator=(const prologue_hook&) = delete;
 
         /**
          * @brief Call the original function.
@@ -528,5 +528,12 @@ namespace renhook
         size_t m_decoded_length;
         uint8_t* m_block;
     };
+
+    template<typename T>
+    using
+#if (defined(__cplusplus) && __cplusplus >= 201402L) || (defined(_HAS_CXX14) && _HAS_CXX14 == 1)
+      [[deprecated("Use 'prologue_hook' instead.")]]
+ #endif
+        inline_hook = prologue_hook<T>;
 }
 #endif
