@@ -1,0 +1,44 @@
+name: Build
+on: [ push, pull_request ]
+
+jobs:
+  build:
+    name: Build (${{ matrix.platform }}, ${{ matrix.config }}, C++${{ matrix.standard }})
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        platform: [ Win32, x64 ]
+        config: [ Debug, Release ]
+        standard: [ 11, 17, 20 ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Create build directory
+        run: mkdir build
+
+      - name: Configure
+        working-directory: build
+        run: |
+          cmake `
+            -A ${{ matrix.platform }} `
+            -DCMAKE_CXX_STANDARD=${{ matrix.standard }} `
+            ${{ github.workspace }}
+
+      - name: Build
+        working-directory: build
+        run: |
+          cmake `
+            --build . `
+            --config ${{ matrix.config }}
+
+      - name: Test
+        working-directory: build/${{ matrix.config }}/bin
+        run: ./Tests.exe
+
+      

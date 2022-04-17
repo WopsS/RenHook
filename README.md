@@ -1,7 +1,6 @@
 # RenHook
 
-[![Build Status](https://dev.azure.com/wopss/RenHook/_apis/build/status/WopsS.RenHook?branchName=master)](https://dev.azure.com/wopss/RenHook/_build/latest?definitionId=5&branchName=master)
-[![Build status](https://ci.appveyor.com/api/projects/status/8lg179n3y460q4lw?svg=true)](https://ci.appveyor.com/project/WopsS/renhook)
+[![Build Status](https://github.com/WopsS/RenHook/actions/workflows/build.yml/badge.svg)](https://github.com/WopsS/RenHook/actions/workflows/build.yml)
 
 An open-source **x86 / x86-64** hooking library for **Windows**.
 
