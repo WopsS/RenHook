@@ -306,15 +306,15 @@ TEST_CASE("hooks::inline_hook", "[hooks][inline_hook]")
     }
     SECTION("real hook")
     {
-        REQUIRE(fibonacci(10) == 55);
+        REQUIRE(fibonacci(11) == 89);
 
         using fibonacci_t = uint32_t (*)(uint32_t);
         hook_t<fibonacci_t> hook(reinterpret_cast<uintptr_t>(&fibonacci), &fibonacci_hooked);
 
         hook.attach();
-        REQUIRE(fibonacci(10) == 10);
+        REQUIRE(fibonacci(127) == 127);
 
         hook.detach();
-        REQUIRE(fibonacci(10) == 55);
+        REQUIRE(fibonacci(17) == 1597);
     }
 }
