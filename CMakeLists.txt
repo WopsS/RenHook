@@ -1,74 +1,20 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.23)
 
-project(RenHook LANGUAGES CXX VERSION 1.0.0)
+project(RenHook LANGUAGES CXX)
 
-# Properties.
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# Variables.
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/libs")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+option(RENHOOK_BUILD_TESTS "Build unit tests" OFF)
 
-foreach(configuration ${CMAKE_CONFIGURATION_TYPES})
-    string(TOLOWER ${configuration} configuration_lower)
-    string(TOUPPER ${configuration} configuration_upper)
+include(ConfigureAndIncludeZydis)
 
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${configuration_upper} "${CMAKE_BINARY_DIR}/${configuration_lower}/libs")
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${configuration_upper} "${CMAKE_BINARY_DIR}/${configuration_lower}/bin")
-endforeach()
-
-# Options.
-option(RENHOOK_ENABLE_TESTS "Build unit tests" ON)
-
-# Dependencies.
-
-# Catch2
-if(RENHOOK_ENABLE_TESTS)
-    set(CATCH_BUILD_STATIC_LIBRARY OFF CACHE INTERNAL "")
-    set(BUILD_TESTING OFF CACHE INTERNAL "")
-    set(CATCH_USE_VALGRIND OFF CACHE INTERNAL "")
-    set(CATCH_BUILD_TESTING OFF CACHE INTERNAL "")
-    set(CATCH_BUILD_EXAMPLES OFF CACHE INTERNAL "")
-    set(CATCH_BUILD_EXTRA_TESTS OFF CACHE INTERNAL "")
-    set(CATCH_ENABLE_COVERAGE OFF CACHE INTERNAL "")
-    set(CATCH_ENABLE_WERROR OFF CACHE INTERNAL "")
-    set(CATCH_INSTALL_DOCS OFF CACHE INTERNAL "")
-    set(CATCH_INSTALL_HELPERS OFF CACHE INTERNAL "")
-
-    add_subdirectory(deps/catch2)
-endif()
-
-# Zydis
-set(ZYAN_DEV_MODE OFF CACHE INTERNAL "")
-set(ZYAN_NO_LIBC OFF CACHE INTERNAL "")
-set(ZYAN_WHOLE_PROGRAM_OPTIMIZATION OFF CACHE INTERNAL "")
-
-set(ZYCORE_BUILD_EXAMPLES OFF CACHE INTERNAL "")
-set(ZYCORE_BUILD_SHARED_LIB OFF CACHE INTERNAL "")
-set(ZYCORE_BUILD_TESTS OFF CACHE INTERNAL "")
-
-set(ZYDIS_BUILD_EXAMPLES OFF CACHE INTERNAL "")
-set(ZYDIS_BUILD_SHARED_LIB OFF CACHE INTERNAL "")
-set(ZYDIS_BUILD_TOOLS OFF CACHE INTERNAL "")
-set(ZYDIS_FEATURE_AVX512 ON CACHE INTERNAL "")
-set(ZYDIS_FEATURE_DECODER ON CACHE INTERNAL "")
-set(ZYDIS_FEATURE_FORMATTER ON CACHE INTERNAL "")
-set(ZYDIS_FEATURE_KNC ON CACHE INTERNAL "")
-set(ZYDIS_FUZZ_AFL_FAST OFF CACHE INTERNAL "")
-set(ZYDIS_LIBFUZZER OFF CACHE INTERNAL "")
-set(ZYDIS_MINIMAL_MODE OFF CACHE INTERNAL "")
-
-add_subdirectory(deps/zydis)
-
-set_target_properties(Zydis PROPERTIES FOLDER "Dependencies")
-set_target_properties(Zycore PROPERTIES FOLDER "Dependencies")
-
-# Projects.
 add_subdirectory(src)
 
-if(RENHOOK_ENABLE_TESTS)
+if(RENHOOK_BUILD_TESTS)
+    include(ConfigureAndIncludeCatch2)
     add_subdirectory(tests)
 endif()

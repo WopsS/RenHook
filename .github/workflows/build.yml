@@ -10,7 +10,7 @@ jobs:
       matrix:
         platform: [ Win32, x64 ]
         config: [ Debug, Release ]
-        standard: [ 11, 17, 20 ]
+        standard: [ 14, 17, 20, 23 ]
 
     steps:
       - name: Checkout
@@ -28,6 +28,7 @@ jobs:
           cmake `
             -A ${{ matrix.platform }} `
             -DCMAKE_CXX_STANDARD=${{ matrix.standard }} `
+            -DRENHOOK_BUILD_TESTS=ON `
             ${{ github.workspace }}
 
       - name: Build
@@ -40,5 +41,3 @@ jobs:
       - name: Test
         working-directory: build/${{ matrix.config }}/bin
         run: ./Tests.exe
-
-      

@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <renhook/memory/utils.hpp>
 
 TEST_CASE("memory::utils", "[memory][utils]")
