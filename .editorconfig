@@ -10,5 +10,5 @@ trim_trailing_whitespace = true
 [*.{cpp,hpp}]
 indent_size = 4
 
-[*.yml]
+[*.{md,yml}]
 indent_size = 2
