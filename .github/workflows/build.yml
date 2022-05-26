@@ -39,5 +39,5 @@ jobs:
             --config ${{ matrix.config }}
 
       - name: Test
-        working-directory: build/${{ matrix.config }}/bin
+        working-directory: build/tests/${{ matrix.config }}
         run: ./Tests.exe
