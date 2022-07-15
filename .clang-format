@@ -11,7 +11,3 @@ BreakInheritanceList: BeforeComma
 KeepEmptyLinesAtTheStartOfBlocks: false
 PointerAlignment: Left
 SpaceAfterTemplateKeyword: false
-
-IncludeCategories:
-    - Regex:        'Windows'
-      Priority:     0
