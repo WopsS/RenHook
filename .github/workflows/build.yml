@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         platform: [ Win32, x64 ]
-        config: [ Debug, Release ]
+        config: [ Debug, Release, MinSizeRel, RelWithDebInfo ]
         standard: [ 14, 17, 20, 23 ]
 
     steps:
