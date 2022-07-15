@@ -8,4 +8,5 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${HEADERS} ${SOURCES})
 target_include_directories(Tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_sources(Tests PRIVATE ${HEADERS} ${SOURCES})
 
+target_compile_options(Tests PRIVATE ${RENHOOK_COMPILE_OPTIONS})
 target_link_libraries(Tests PRIVATE RenHook Catch2::Catch2WithMain)
