@@ -15,7 +15,7 @@ endif()
 
 option(RENHOOK_BUILD_TESTS "Build unit tests." NO)
 option(RENHOOK_EXTRA_WARNINGS "Enable extra warnings." NO)
-option(RENHOOK_TREAT_WARNINGS_AS_ERRORS "Treats compiler warnings as errors." NO)
+option(RENHOOK_TREAT_WARNINGS_AS_ERRORS "Treat compiler warnings as errors." NO)
 
 include(cmake/ConfigureAndIncludeZydis.cmake)
 
