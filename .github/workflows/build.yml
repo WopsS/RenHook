@@ -28,7 +28,9 @@ jobs:
           cmake `
             -A ${{ matrix.platform }} `
             -DCMAKE_CXX_STANDARD=${{ matrix.standard }} `
-            -DRENHOOK_BUILD_TESTS=ON `
+            -DRENHOOK_BUILD_TESTS=YES `
+            -DRENHOOK_EXTRA_WARNINGS=YES `
+            -DRENHOOK_TREAT_WARNINGS_AS_ERRORS=YES `
             ${{ github.workspace }}
 
       - name: Build

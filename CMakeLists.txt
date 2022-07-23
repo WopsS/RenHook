@@ -13,12 +13,33 @@ if(PROJECT_IS_TOP_LEVEL)
   set_property(GLOBAL PROPERTY USE_FOLDERS YES)
 endif()
 
-option(RENHOOK_BUILD_TESTS "Build unit tests" NO)
+option(RENHOOK_BUILD_TESTS "Build unit tests." NO)
+option(RENHOOK_EXTRA_WARNINGS "Enable extra warnings." NO)
+option(RENHOOK_TREAT_WARNINGS_AS_ERRORS "Treats compiler warnings as errors." NO)
 
 include(cmake/ConfigureAndIncludeZydis.cmake)
 
-# Set the custom compile options to enable more warnings and treat them as errors.
-set(RENHOOK_COMPILE_OPTIONS /W4 /WX)
+if(RENHOOK_BUILD_TESTS)
+  # Including Catch2 here so it won't be affected by the options set by "RENHOOK_EXTRA_WARNINGS" and
+  # "RENHOOK_TREAT_WARNINGS_AS_ERRORS".
+  include(cmake/ConfigureAndIncludeCatch2.cmake)
+endif()
+
+if(RENHOOK_EXTRA_WARNINGS)
+  if(MSVC)
+    add_compile_options(/W4)
+  else()
+    add_compile_options(-Wall -Wextra)
+  endif()
+endif()
+
+if(RENHOOK_TREAT_WARNINGS_AS_ERRORS)
+  if(MSVC)
+    add_compile_options(/WX)
+  else()
+    add_compile_options(-Werror)
+  endif()
+endif()
 
 # Create the library with all the necessary src / include files.
 set(RENHOOK_HEADER_FILES
@@ -39,11 +60,9 @@ target_include_directories(RenHook
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 
-target_compile_options(RenHook PRIVATE ${RENHOOK_COMPILE_OPTIONS})
 target_link_libraries(RenHook PUBLIC Zydis)
 
 # Add the tests if necessary.
 if(RENHOOK_BUILD_TESTS)
-  include(cmake/ConfigureAndIncludeCatch2.cmake)
   add_subdirectory(tests)
 endif()
