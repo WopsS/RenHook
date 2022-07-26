@@ -53,7 +53,7 @@ set(RENHOOK_SRC_FILES
 source_group(TREE "${PROJECT_SOURCE_DIR}/include/renhook" FILES ${RENHOOK_HEADER_FILES})
 source_group(TREE "${PROJECT_SOURCE_DIR}/src" FILES ${RENHOOK_SRC_FILES})
 
-add_library(RenHook STATIC ${RENHOOK_SRC_FILES} ${RENHOOK_HEADER_FILES})
+add_library(RenHook STATIC ${RENHOOK_HEADER_FILES} ${RENHOOK_SRC_FILES})
 
 target_include_directories(RenHook
   PUBLIC

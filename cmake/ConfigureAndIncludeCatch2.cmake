@@ -5,8 +5,10 @@ set(CATCH_CONFIG_WINDOWS_CRTDBG ON CACHE BOOL "")
 
 add_subdirectory(deps/catch2)
 
-set_target_properties(Catch2 PROPERTIES FOLDER "Dependencies")
-set_target_properties(Catch2WithMain PROPERTIES FOLDER "Dependencies")
+if(PROJECT_IS_TOP_LEVEL)
+  set_target_properties(Catch2 PROPERTIES FOLDER "Dependencies")
+  set_target_properties(Catch2WithMain PROPERTIES FOLDER "Dependencies")
+endif()
 
 mark_as_advanced(
   CATCH_CONFIG_ANDROID_LOGWRITE

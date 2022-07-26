@@ -8,8 +8,10 @@ option(ZYDIS_FEATURE_FORMATTER "" OFF)
 
 add_subdirectory(deps/zydis)
 
-set_target_properties(Zydis PROPERTIES FOLDER "Dependencies")
-set_target_properties(Zycore PROPERTIES FOLDER "Dependencies")
+if(PROJECT_IS_TOP_LEVEL)
+  set_target_properties(Zydis PROPERTIES FOLDER "Dependencies")
+  set_target_properties(Zycore PROPERTIES FOLDER "Dependencies")
+endif()
 
 mark_as_advanced(
   ZYAN_DEV_MODE
