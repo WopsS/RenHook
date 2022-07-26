@@ -44,10 +44,12 @@ endif()
 # Create the library with all the necessary src / include files.
 set(RENHOOK_HEADER_FILES
   include/renhook/renhook.hpp
+  include/renhook/exceptions.hpp
+  include/renhook/detail/core.hpp
 )
 
 set(RENHOOK_SRC_FILES
-  src/gitkeep.cpp
+  src/exceptions.cpp
 )
 
 source_group(TREE "${PROJECT_SOURCE_DIR}/include/renhook" FILES ${RENHOOK_HEADER_FILES})
