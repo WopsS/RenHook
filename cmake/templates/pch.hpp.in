@@ -1,0 +1,10 @@
+#pragma once
+
+#include <cassert>
+#include <exception>
+#include <functional>
+#include <sstream>
+#include <string>
+#include <system_error>
+
+#include <Windows.h>

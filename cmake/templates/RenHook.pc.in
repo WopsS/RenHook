@@ -1,0 +1,6 @@
+Name: @PROJECT_NAME@
+Description: An open-source x86 / x86-64 hooking library for Windows.
+URL: https://github.com/WopsS/RenHook
+Version: @PROJECT_VERSION@
+Cflags: -I@RENHOOK_PKG_CONFIG_INCLUDE_DIR@
+Libs: -L@RENHOOK_PKG_CONFIG_LIB_DIR@ -l@PROJECT_NAME@

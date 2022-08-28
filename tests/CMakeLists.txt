@@ -1,11 +1,27 @@
-add_executable(Tests "")
+set(
+  RENHOOK_TESTS_SRC_FILES
+    exceptions.cpp
+)
 
-file(GLOB_RECURSE HEADERS *.hpp)
-file(GLOB_RECURSE SOURCES *.cpp)
+source_group(
+  TREE "${CMAKE_CURRENT_SOURCE_DIR}"
+  FILES ${RENHOOK_TESTS_SRC_FILES}
+)
 
-source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${HEADERS} ${SOURCES})
+add_executable(Tests ${RENHOOK_TESTS_SRC_FILES})
 
-target_include_directories(Tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_sources(Tests PRIVATE ${HEADERS} ${SOURCES})
+target_include_directories(Tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 
-target_link_libraries(Tests PRIVATE RenHook Catch2::Catch2WithMain)
+target_compile_options(
+  Tests
+    PRIVATE
+      ${RENHOOK_EXTRA_WARNINGS_FLAGS}
+      ${RENHOOK_TREAT_WARNINGS_AS_ERRORS_FLAG}
+)
+
+target_link_libraries(
+  Tests
+    PRIVATE
+      RenHook
+      Catch2::Catch2WithMain
+)

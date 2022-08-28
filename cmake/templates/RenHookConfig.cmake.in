@@ -1,0 +1,5 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/@RENHOOK_EXPORT_TARGETS@.cmake")
+
+check_required_components(RenHook)
