@@ -22,8 +22,8 @@ protected:
 
     RENHOOK_NODISCARD static std::string create_message(
         const char* function_signature, const char* what_arg,
-        std::function<void(std::ostringstream&)> status_code_appender_fn = {},
-        std::function<void(std::ostringstream&)> extra_info_appender_fn = {});
+        const std::function<void(std::ostringstream&)>& status_code_appender_fn = {},
+        const std::function<void(std::ostringstream&)>& extra_info_appender_fn = {});
 };
 
 class RENHOOK_NODISCARD generic_exception : public exception

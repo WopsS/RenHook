@@ -1,6 +1,6 @@
 #include <renhook/exceptions.hpp>
 
-#include <cassert>
+#include <renhook/config.hpp>
 
 renhook::exception::exception(const std::string& what_arg) noexcept
     : std::exception(what_arg.c_str())
@@ -9,11 +9,11 @@ renhook::exception::exception(const std::string& what_arg) noexcept
 
 RENHOOK_NODISCARD std::string renhook::exception::create_message(
     const char* function_signature, const char* what_arg,
-    std::function<void(std::ostringstream&)> status_code_appender_fn,
-    std::function<void(std::ostringstream&)> extra_info_appender_fn)
+    const std::function<void(std::ostringstream&)>& status_code_appender_fn,
+    const std::function<void(std::ostringstream&)>& extra_info_appender_fn)
 {
-    assert(function_signature);
-    assert(what_arg);
+    RENHOOK_ASSERT(function_signature);
+    RENHOOK_ASSERT(what_arg);
 
     std::ostringstream message;
     message << function_signature << ": " << what_arg;

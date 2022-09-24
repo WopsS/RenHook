@@ -57,6 +57,8 @@ endif()
 set(
   RENHOOK_HEADER_FILES
     include/renhook/renhook.hpp
+
+    include/renhook/config.hpp
     include/renhook/exceptions.hpp
     include/renhook/detail/core.hpp
 )
