@@ -1,0 +1,45 @@
+name: Clang-Format Workflow
+
+on:
+  push:
+    branches: '**'
+  pull_request:
+
+env:
+  LLVM_VERSION: 15
+
+jobs:
+  format:
+    name: Check the formatting
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Pin to a specific version
+        run: |
+          $latestChocoVersion = (Get-LatestChocoPackageVersion -TargetVersion $env:LLVM_VERSION -PackageName "llvm")
+          Choco-Install -PackageName llvm -ArgumentList '--allow-downgrade', '--version', $latestChocoVersion
+
+      - name: Run clang-format
+        env:
+            RENHOOK_COMMIT_BEFORE: ${{ github.event.pull_request.base.sha || github.event.before }}
+            RENHOOK_COMMIT_AFTER: ${{ github.sha }}
+        run: |
+          $output = (git `
+                      -c core.autocrlf=false `
+                      -c core.eol=lf `
+                      -c color.ui=always `
+                      clang-format `
+                        --style file `
+                        --diff $env:RENHOOK_COMMIT_BEFORE $env:RENHOOK_COMMIT_AFTER
+                    )?.Trim()
+
+          Write-Output $output
+
+          if ($output -ne $null -and $output -ine "no modified files to format") {
+            exit 1
+          }
