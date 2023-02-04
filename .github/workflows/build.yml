@@ -28,7 +28,8 @@ jobs:
           cmake `
             -A ${{ matrix.platform }} `
             -DCMAKE_CXX_STANDARD=${{ matrix.standard }} `
-            -DRENHOOK_USE_PCH=ON `
+            -DRENHOOK_INSTALL=ON `
+            -DRENHOOK_USE_PCH=OFF `
             -DRENHOOK_BUILD_TESTS=ON `
             -DRENHOOK_EXTRA_WARNINGS=ON `
             -DRENHOOK_TREAT_WARNINGS_AS_ERRORS=ON `
