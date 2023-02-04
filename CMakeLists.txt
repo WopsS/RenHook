@@ -7,53 +7,77 @@ project(
 )
 
 # -----------------------------------------------------------------------------
-# General configuration / options / variables
+# General configuration and variables
 # -----------------------------------------------------------------------------
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-elseif(CMAKE_CXX_STANDARD LESS 14)
-  message(FATAL_ERROR "RenHook requires C++14 or higher.")
-endif()
-
 if(PROJECT_IS_TOP_LEVEL)
+  if(NOT CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 14)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  elseif(CMAKE_CXX_STANDARD LESS 14)
+    message(FATAL_ERROR "RenHook requires C++14 or higher.")
+  endif()
+
   set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 endif()
-
-include(cmake/ConfigureAndIncludeZydis.cmake)
-
-option(RENHOOK_USE_PCH "Use precompiled headers to speed up compilation time." OFF)
 
 set(RENHOOK_CMAKE_DIR "${PROJECT_SOURCE_DIR}/cmake")
 set(RENHOOK_CMAKE_TEMPLATES_DIR "${RENHOOK_CMAKE_DIR}/templates")
 set(RENHOOK_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include/")
 
 # -----------------------------------------------------------------------------
-# Options related to warnings
+# Options
 # -----------------------------------------------------------------------------
-if(PROJECT_IS_TOP_LEVEL)
-  option(RENHOOK_EXTRA_WARNINGS "Enable extra warnings." OFF)
-  if(RENHOOK_EXTRA_WARNINGS)
-    if(MSVC)
-      set(RENHOOK_EXTRA_WARNINGS_FLAGS /W4)
-    else()
-      set(RENHOOK_EXTRA_WARNINGS_FLAGS -Wall -Wextra)
-    endif()
-  endif()
+option(RENHOOK_INSTALL "Generate the install target." ${PROJECT_IS_TOP_LEVEL})
+option(RENHOOK_USE_PCH "Use precompiled headers to speed up compilation time." OFF)
 
+if(PROJECT_IS_TOP_LEVEL)
+  option(RENHOOK_BUILD_TESTS "Build unit tests." ON)
+  option(RENHOOK_EXTRA_WARNINGS "Enable extra warnings." ON)
   option(RENHOOK_TREAT_WARNINGS_AS_ERRORS "Treat compiler warnings as errors." OFF)
-  if(RENHOOK_TREAT_WARNINGS_AS_ERRORS)
-    if(MSVC)
-      set(RENHOOK_TREAT_WARNINGS_AS_ERRORS_FLAG /WX)
-    else()
-      set(RENHOOK_TREAT_WARNINGS_AS_ERRORS_FLAG -Werror)
-    endif()
+endif()
+
+# -----------------------------------------------------------------------------
+# Dependencies
+# -----------------------------------------------------------------------------
+include(cmake/ConfigureAndIncludeZydis.cmake)
+
+if(RENHOOK_BUILD_TESTS)
+    include(cmake/ConfigureAndIncludeCatch2.cmake)
+endif()
+
+# -----------------------------------------------------------------------------
+# Options related to compiler warnings related only to this project
+# -----------------------------------------------------------------------------
+if(RENHOOK_EXTRA_WARNINGS)
+  if(MSVC)
+    add_compile_options(/W4)
+  else()
+    message(
+      FATAL_ERROR
+      "The compiler options to enable extra warnings is not known for \
+      '${CMAKE_CXX_COMPILER_ID}'"
+    )
+  endif()
+endif()
+
+if(RENHOOK_TREAT_WARNINGS_AS_ERRORS)
+  if(MSVC)
+    add_compile_options(/WX)
+  else()
+    message(
+      FATAL_ERROR
+      "The compiler option to treat warnings as errors is not known for \
+      '${CMAKE_CXX_COMPILER_ID}'"
+    )
   endif()
 endif()
 
 # -----------------------------------------------------------------------------
 # Main library
 # -----------------------------------------------------------------------------
+add_library(RenHook STATIC)
+add_library(wopss::RenHook ALIAS RenHook)
+
 set(
   RENHOOK_HEADER_FILES
     include/renhook/renhook.hpp
@@ -83,13 +107,6 @@ if(RENHOOK_USE_FOLDERS)
   )
 endif()
 
-add_library(
-  RenHook STATIC
-  ${RENHOOK_HEADER_FILES}
-  ${RENHOOK_SRC_FILES}
-)
-add_library(RenHook::RenHook ALIAS RenHook)
-
 target_include_directories(
   RenHook
     PUBLIC
@@ -97,14 +114,18 @@ target_include_directories(
       "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
-target_compile_options(
+target_sources(
   RenHook
     PRIVATE
-      ${RENHOOK_EXTRA_WARNINGS_FLAGS}
-      ${RENHOOK_TREAT_WARNINGS_AS_ERRORS_FLAG}
+      ${RENHOOK_HEADER_FILES}
+      ${RENHOOK_SRC_FILES}
 )
 
-target_link_libraries(RenHook PUBLIC Zydis)
+target_link_libraries(
+  RenHook
+    PUBLIC
+      Zydis
+)
 
 if(RENHOOK_USE_PCH)
     set(RENHOOK_PCH_FILE "${PROJECT_BINARY_DIR}/renhook_pch.hpp")
@@ -116,25 +137,24 @@ if(RENHOOK_USE_PCH)
       @ONLY
     )
 
-    target_precompile_headers(RenHook PRIVATE "${RENHOOK_PCH_FILE}")
+    target_precompile_headers(
+      RenHook
+        PRIVATE
+        "${RENHOOK_PCH_FILE}"
+    )
 endif()
 
 # -----------------------------------------------------------------------------
 # Tests
 # -----------------------------------------------------------------------------
-if(PROJECT_IS_TOP_LEVEL)
-  option(RENHOOK_BUILD_TESTS "Build unit tests." OFF)
-  if(RENHOOK_BUILD_TESTS)
-    include(cmake/ConfigureAndIncludeCatch2.cmake)
-    add_subdirectory(tests)
-  endif()
+if(RENHOOK_BUILD_TESTS)
+  add_subdirectory(tests)
 endif()
 
 # -----------------------------------------------------------------------------
 # Install
 # -----------------------------------------------------------------------------
 if(NOT CMAKE_SKIP_INSTALL_RULES)
-  option(RENHOOK_INSTALL "Generate the install target." ${PROJECT_IS_TOP_LEVEL})
   if(RENHOOK_INSTALL)
     include(CMakePackageConfigHelpers)
     include(GNUInstallDirs)
@@ -186,7 +206,7 @@ if(NOT CMAKE_SKIP_INSTALL_RULES)
 
     install(
       EXPORT ${RENHOOK_EXPORT_TARGETS}
-      NAMESPACE RenHook::
+      NAMESPACE wopss::
       DESTINATION "${RENHOOK_INSTALL_CONFIG_DIR}"
     )
 
