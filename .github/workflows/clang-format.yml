@@ -40,6 +40,8 @@ jobs:
 
           Write-Output $output
 
-          if ($output -ne $null -and $output -ine "no modified files to format") {
-            exit 1
+          # A temporary fix for https://github.com/llvm/llvm-project/issues/56736.
+          # TODO: Once LLVM 16 is released, reduce this to only the "git ... clang-format ..." command.
+          if ($LASTEXITCODE -eq 1 -and !$output) {
+            exit 0
           }
